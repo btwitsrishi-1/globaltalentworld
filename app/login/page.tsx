@@ -63,7 +63,7 @@ export default function LoginPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        <main className="min-h-screen bg-[#060608] flex items-center justify-center relative overflow-hidden">
             <CustomCursor />
             <Navbar />
 
@@ -99,7 +99,7 @@ export default function LoginPage() {
                                     setEmail(e.target.value);
                                     if (error) setError("");
                                 }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${
                                     error ? "border-red-500" : "border-white/10 focus:border-blue-500"
                                 }`}
                                 placeholder="you@example.com"
@@ -127,7 +127,7 @@ export default function LoginPage() {
                                     setPassword(e.target.value);
                                     if (error) setError("");
                                 }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${
                                     error ? "border-red-500" : "border-white/10 focus:border-blue-500"
                                 }`}
                                 placeholder="Enter your password"

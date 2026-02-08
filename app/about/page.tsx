@@ -3,10 +3,13 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { ArrowRight } from "lucide-react";
+
+const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => {
     return (
@@ -40,9 +43,10 @@ export default function AboutPage() {
     const reverseRotate = useTransform(scrollYProgress, [0, 1], [360, 0]);
 
     return (
-        <main ref={containerRef} className="bg-slate-950 text-white overflow-hidden relative">
+        <main ref={containerRef} className="bg-[#060608] text-white overflow-hidden relative">
             <CustomCursor />
             <Navbar />
+            <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
 
             {/* Fixed Background Graphic (The "Lens") */}
             <div
@@ -85,7 +89,7 @@ export default function AboutPage() {
                     </p>
                     <Link
                         href="/careers"
-                        className="mt-12 inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-950 rounded-full font-bold hover:bg-blue-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                        className="mt-12 inline-flex items-center gap-2 px-8 py-4 bg-white text-slate-950 rounded-full font-bold hover:bg-blue-500 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
                     >
                         Explore Open Roles
                         <ArrowRight className="w-5 h-5" aria-hidden="true" />

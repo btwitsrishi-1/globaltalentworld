@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { InsightCard } from "@/components/insights/insight-card";
@@ -8,6 +9,8 @@ import { CustomCursor } from "@/components/ui/custom-cursor";
 import { BookOpen, CheckCircle, Loader2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
+
+const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
 
 const INSIGHTS = [
     {
@@ -102,13 +105,14 @@ export default function InsightsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
+            <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
 
-            <div className="flex-1 pt-32 sm:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+            <div className="flex-1 pt-32 sm:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full relative z-10">
                 <header className="mb-12 sm:mb-16">
-                    <h1 className="font-script text-5xl sm:text-6xl md:text-8xl mb-4 sm:mb-6">Insights</h1>
+                    <h1 className="font-sans font-light text-5xl sm:text-6xl md:text-8xl mb-4 sm:mb-6">Insights</h1>
                     <p className="text-lg sm:text-xl text-slate-400 max-w-2xl">
                         Deep dives into the intersection of technology, design, and culture.
                     </p>
@@ -146,7 +150,7 @@ export default function InsightsPage() {
                             value={newsletterEmail}
                             onChange={(e) => setNewsletterEmail(e.target.value)}
                             placeholder="you@example.com"
-                            className="flex-1 bg-slate-900/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
+                            className="flex-1 bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
                             disabled={newsletterStatus === "loading"}
                         />
                         <button

@@ -6,69 +6,81 @@ import { ArrowRight } from "lucide-react";
 
 export const CTA = () => {
     return (
-        <section className="py-32 px-6 bg-gradient-to-b from-black via-emerald-950/20 to-black relative overflow-hidden border-t border-emerald-500/10">
-            {/* Background Effects - Stronger with Green */}
+        <section className="py-32 md:py-44 px-6 bg-[#060608] relative overflow-hidden">
+            {/* Background glows — layered */}
             <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/15 rounded-full blur-[120px]" />
-                <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-cyan-500/15 rounded-full blur-[80px]" />
-                <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-blue-600/12 rounded-full blur-[80px]" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] bg-blue-500/[0.06] rounded-full blur-[180px]" />
+                <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-emerald-500/[0.03] rounded-full blur-[120px]" />
+                <div className="absolute bottom-1/3 right-1/3 w-[300px] h-[300px] bg-cyan-500/[0.03] rounded-full blur-[100px]" />
             </div>
-            {/* Grid pattern */}
-            <div className="absolute inset-0 opacity-[0.02]" style={{
-                backgroundImage: `linear-gradient(rgba(59,130,246,.1) 1px, transparent 1px),
-                                 linear-gradient(90deg, rgba(59,130,246,.1) 1px, transparent 1px)`,
-                backgroundSize: '60px 60px'
-            }} />
 
             <div className="max-w-4xl mx-auto relative z-10">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-100px" }}
-                    transition={{ duration: 0.6 }}
-                    className="text-center"
-                >
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6">
-                        Ready to join the{" "}
-                        <span className="font-script text-5xl md:text-6xl lg:text-7xl text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400">
-                            movement
-                        </span>
-                        ?
-                    </h2>
-                    <p className="text-slate-300 text-lg md:text-xl max-w-2xl mx-auto mb-10 drop-shadow-lg">
-                        Whether you&apos;re a world-class talent seeking your next opportunity or a company
-                        looking to build an exceptional team, we&apos;re here for you.
-                    </p>
+                {/* Animated gradient border card */}
+                <div className="gradient-border-animated rounded-3xl p-px">
+                    <div className="bg-[#060608] rounded-3xl px-8 py-16 md:px-16 md:py-24">
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            whileInView={{ opacity: 1, y: 0 }}
+                            viewport={{ once: true, margin: "-100px" }}
+                            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-center"
+                        >
+                            <motion.p
+                                initial={{ opacity: 0, y: 10 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.6, delay: 0.1 }}
+                                className="text-[13px] font-medium tracking-[0.3em] uppercase text-blue-400/60 mb-8"
+                            >
+                                Get started
+                            </motion.p>
 
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Link
-                            href="/signup"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-full transition-all hover:scale-105 hover:shadow-lg hover:shadow-blue-500/25"
-                        >
-                            Get Started
-                            <ArrowRight className="w-5 h-5" />
-                        </Link>
-                        <Link
-                            href="/careers"
-                            className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-full border border-white/10 transition-all hover:scale-105"
-                        >
-                            Browse Opportunities
-                        </Link>
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 tracking-tight leading-[1.1]">
+                                Ready to join the
+                                <br />
+                                <span className="text-gradient">movement</span>?
+                            </h2>
+
+                            <p className="text-white/30 text-lg md:text-xl max-w-xl mx-auto mb-12 font-light leading-relaxed">
+                                Whether you&apos;re world-class talent or a company building an exceptional team.
+                            </p>
+
+                            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                                <Link
+                                    href="/signup"
+                                    className="btn-embossed-primary group inline-flex items-center justify-center gap-2 px-8 py-3.5 text-white text-sm font-medium rounded-full"
+                                >
+                                    Get Started
+                                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                </Link>
+                                <Link
+                                    href="/careers"
+                                    className="btn-embossed-secondary inline-flex items-center justify-center gap-2 px-8 py-3.5 text-white/60 text-sm font-medium rounded-full border border-white/[0.08] hover:text-white/80"
+                                >
+                                    Browse Opportunities
+                                </Link>
+                            </div>
+                        </motion.div>
                     </div>
-                </motion.div>
+                </div>
 
-                {/* Trust Badges */}
+                {/* Trust logos */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="mt-16 pt-16 border-t border-white/10"
+                    transition={{ duration: 0.8, delay: 0.3 }}
+                    className="mt-20 pt-12 border-t border-white/[0.04]"
                 >
-                    <p className="text-center text-slate-400 text-sm mb-8 font-medium">Trusted by teams at</p>
-                    <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-70 hover:opacity-100 transition-opacity">
+                    <p className="text-center text-white/15 text-[10px] uppercase tracking-[0.3em] mb-8">
+                        Trusted by teams at
+                    </p>
+                    <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 sibling-fade">
                         {["Stripe", "Vercel", "Linear", "Notion", "Figma", "Airbnb"].map((company) => (
-                            <span key={company} className="text-white/80 font-semibold text-lg hover:text-cyan-400 transition-colors cursor-default">
+                            <span
+                                key={company}
+                                className="text-white/15 font-medium text-sm hover:text-white/40 transition-colors duration-300 cursor-default"
+                            >
                                 {company}
                             </span>
                         ))}

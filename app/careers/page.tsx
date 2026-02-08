@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { JobCard } from "@/components/careers/job-card";
@@ -10,20 +11,23 @@ import { useAuth } from "@/lib/auth-context";
 import Link from "next/link";
 import { Briefcase, LayoutDashboard, Users, SearchX, Loader2 } from "lucide-react";
 
+const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
+
 export default function CareersPage() {
     const { jobs, isLoading, searchQuery, locationQuery } = useJobs();
     const { user } = useAuth();
     const hasFilters = searchQuery || locationQuery;
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
+            <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
 
-            <div className="flex-1 pt-32 sm:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full">
+            <div className="flex-1 pt-32 sm:pt-40 pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full relative z-10">
                 {/* Header */}
                 <header className="text-center mb-12">
-                    <h1 className="font-script text-5xl sm:text-6xl md:text-8xl mb-4">Open Roles</h1>
+                    <h1 className="font-sans font-light text-5xl sm:text-6xl md:text-8xl mb-4">Open Roles</h1>
                     <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto">
                         Join the teams building the future. Find your next role.
                     </p>

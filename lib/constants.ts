@@ -2,6 +2,11 @@
 export const STORAGE_KEYS = {
     USER: "gtw_user",
     APPLICATIONS: "gtw_applications",
+    ADMIN_AUTH: "gtw_admin_auth",
+    ACCESS_REQUESTS: "gtw_access_requests",
+    ADMIN_INSIGHTS: "gtw_admin_insights",
+    ADMIN_ABOUT: "gtw_admin_about",
+    RECRUITER_APPLICATIONS: "gtw_recruiter_applications",
 } as const;
 
 // Default avatar generator

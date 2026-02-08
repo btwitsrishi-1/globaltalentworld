@@ -14,15 +14,18 @@ interface User {
     location?: string;
     website?: string;
     cv?: string;
-    role?: "candidate" | "employer" | "both";
+    role?: "candidate" | "employer" | "both" | "recruiter" | "admin";
+    recruiterStatus?: "pending" | "approved" | "rejected";
+    recruiterCompany?: string;
 }
 
 interface AuthContextType {
     user: User | null;
     login: (email: string, password: string) => Promise<{ error?: string }>;
-    signup: (name: string, email: string, handle: string, password: string) => Promise<{ error?: string }>;
+    signup: (name: string, email: string, handle: string, password: string, role?: string) => Promise<{ error?: string }>;
     logout: () => Promise<void>;
     updateProfile: (updates: Partial<User>) => Promise<void>;
+    applyForRecruiter: (company: string) => Promise<void>;
     isLoading: boolean;
 }
 
@@ -49,6 +52,8 @@ async function fetchProfile(userId: string): Promise<User | null> {
             website: data.website,
             cv: data.cv,
             role: data.role,
+            recruiterStatus: data.recruiter_status,
+            recruiterCompany: data.recruiter_company,
         };
     } catch {
         return null;
@@ -160,7 +165,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, []);
 
-    const signup = useCallback(async (name: string, email: string, handle: string, password: string): Promise<{ error?: string }> => {
+    const signup = useCallback(async (name: string, email: string, handle: string, password: string, role?: string): Promise<{ error?: string }> => {
         try {
             const formattedHandle = handle.startsWith("@") ? handle : `@${handle}`;
             const avatarUrl = getDefaultAvatar(name);
@@ -173,6 +178,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                         name: name.trim(),
                         handle: formattedHandle,
                         avatar: avatarUrl,
+                        role: role || "candidate",
+                        ...(role === "recruiter" ? { recruiter_status: "pending" } : {}),
                     },
                 },
             });
@@ -222,6 +229,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         safeRemoveLocalStorage(STORAGE_KEYS.APPLICATIONS);
     }, []);
 
+    const applyForRecruiter = useCallback(async (company: string) => {
+        if (!user) return;
+
+        const updatedUser = {
+            ...user,
+            role: "recruiter" as const,
+            recruiterStatus: "pending" as const,
+            recruiterCompany: company,
+        };
+        setUser(updatedUser);
+        safeSetLocalStorage(STORAGE_KEYS.USER, JSON.stringify(updatedUser));
+
+        if (user.id) {
+            try {
+                await supabase
+                    .from("profiles")
+                    .update({
+                        role: "recruiter",
+                        recruiter_status: "pending",
+                        recruiter_company: company,
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq("id", user.id);
+            } catch {
+                console.warn("Could not sync recruiter application to Supabase");
+            }
+        }
+    }, [user]);
+
     const updateProfile = useCallback(async (updates: Partial<User>) => {
         if (!user) return;
 
@@ -249,7 +285,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, [user]);
 
     return (
-        <AuthContext.Provider value={{ user, login, signup, logout, updateProfile, isLoading }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, updateProfile, applyForRecruiter, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

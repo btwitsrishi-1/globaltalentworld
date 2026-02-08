@@ -50,8 +50,8 @@ export default function ProfilePage() {
 
     if (!user) {
         return (
-            <main className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center">
-                <div className="w-8 h-8 border-2 border-emerald-400 border-t-transparent rounded-full animate-spin" />
+            <main className="min-h-screen bg-[#060608] text-white flex flex-col items-center justify-center">
+                <div className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
             </main>
         );
     }
@@ -129,7 +129,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
 
@@ -141,7 +141,7 @@ export default function ProfilePage() {
                 >
                     {/* Header */}
                     <div>
-                        <h1 className="font-script text-4xl sm:text-5xl text-white mb-2">Your Profile</h1>
+                        <h1 className="font-sans font-light text-4xl sm:text-5xl text-white mb-2">Your Profile</h1>
                         <p className="text-slate-400">Manage your public profile and settings</p>
                     </div>
 
@@ -154,7 +154,7 @@ export default function ProfilePage() {
                                 exit={{ opacity: 0, y: -10 }}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${
                                     saveMessage.type === "success"
-                                        ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                                        ? "bg-blue-500/10 border-blue-500/20 text-blue-400"
                                         : "bg-red-500/10 border-red-500/20 text-red-400"
                                 }`}
                             >
@@ -169,7 +169,7 @@ export default function ProfilePage() {
                     </AnimatePresence>
 
                     {/* Profile Card */}
-                    <div className="bg-white/5 backdrop-blur-md border border-emerald-500/20 rounded-2xl p-8 space-y-8">
+                    <div className="bg-white/5 backdrop-blur-md border border-blue-500/20 rounded-2xl p-8 space-y-8">
                         {/* Avatar Section */}
                         <div className="flex items-center gap-6">
                             <div className="relative group">
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                                 </div>
                                 <button
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                    className="absolute inset-0 rounded-full bg-[#060608]/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                                     disabled={isUploading}
                                     aria-label="Change profile picture"
                                 >
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                             </div>
                             <div>
                                 <h2 className="text-xl font-semibold text-white">{user.name}</h2>
-                                <p className="text-emerald-400">{user.handle}</p>
+                                <p className="text-blue-400">{user.handle}</p>
                                 <p className="text-sm text-slate-400 mt-1">{user.email}</p>
                             </div>
                         </div>
@@ -226,7 +226,7 @@ export default function ProfilePage() {
                                     type="text"
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Your name"
                                 />
                             </div>
@@ -240,7 +240,7 @@ export default function ProfilePage() {
                                     value={formData.bio}
                                     onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                                     rows={4}
-                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none"
+                                    className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                     placeholder="Tell us about yourself..."
                                     maxLength={500}
                                 />
@@ -257,7 +257,7 @@ export default function ProfilePage() {
                                         type="text"
                                         value={formData.location}
                                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                        className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder="City, Country"
                                     />
                                 </div>
@@ -274,7 +274,7 @@ export default function ProfilePage() {
                                             setFormData({ ...formData, website: e.target.value });
                                             if (websiteError) setWebsiteError("");
                                         }}
-                                        className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+                                        className={`w-full px-4 py-3 bg-white/5 border rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                                             websiteError ? "border-red-500/50" : "border-white/10"
                                         }`}
                                         placeholder="https://yoursite.com"
@@ -293,9 +293,9 @@ export default function ProfilePage() {
                             </label>
                             <div className="flex items-center gap-4">
                                 {user.cv ? (
-                                    <div className="flex-1 flex items-center justify-between px-4 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                    <div className="flex-1 flex items-center justify-between px-4 py-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                                         <div className="flex items-center gap-3">
-                                            <FileText className="w-5 h-5 text-emerald-400" />
+                                            <FileText className="w-5 h-5 text-blue-400" />
                                             <span className="text-sm text-slate-300">{user.cv}</span>
                                         </div>
                                         <button
@@ -312,7 +312,7 @@ export default function ProfilePage() {
                                         className="flex-1 flex items-center justify-center gap-3 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-colors"
                                         disabled={isUploading}
                                     >
-                                        <Upload className="w-5 h-5 text-emerald-400" />
+                                        <Upload className="w-5 h-5 text-blue-400" />
                                         <span className="text-sm text-slate-300">Upload CV/Resume</span>
                                     </button>
                                 )}
@@ -332,7 +332,7 @@ export default function ProfilePage() {
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSaving ? (
                                     <>

@@ -85,7 +85,7 @@ export const Hero = () => {
                 {/* Floating Elements (Interactive Parallax) - Brighter */}
                 <motion.div
                     style={{ x: layer1X, y: layer1Y }}
-                    className="absolute top-1/4 left-10 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl z-10 mix-blend-screen motion-reduce:hidden"
+                    className="absolute top-1/4 left-10 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl z-10 mix-blend-screen motion-reduce:hidden"
                     aria-hidden="true"
                 />
                 <motion.div
@@ -121,7 +121,7 @@ export const Hero = () => {
                                 variants={titleVariants}
                                 initial="hidden"
                                 animate="visible"
-                                className="font-script text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent bg-clip-text bg-gradient-to-br from-white via-emerald-100 to-cyan-200 leading-tight block drop-shadow-[0_0_30px_rgba(16,185,129,0.3)]"
+                                className="font-sans font-light text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-transparent bg-clip-text bg-gradient-to-br from-white via-emerald-100 to-cyan-200 leading-tight block drop-shadow-[0_0_30px_rgba(16,185,129,0.3)]"
                             >
                                 {word}
                             </motion.span>

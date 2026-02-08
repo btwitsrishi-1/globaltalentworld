@@ -74,7 +74,7 @@ export const PostCard = ({ author, content, videoUrl, image, likes: initialLikes
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.5 }}
-            className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-blue-500/30 hover:shadow-2xl hover:shadow-blue-500/10 mb-6"
+            className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 transition-all hover:border-blue-500/30 hover:shadow-2xl hover:shadow-emerald-500/10 mb-6"
         >
             {/* Header */}
             <header className="flex items-center justify-between mb-4">
@@ -89,7 +89,7 @@ export const PostCard = ({ author, content, videoUrl, image, likes: initialLikes
                                 className="object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-tr from-blue-500 to-purple-500" aria-hidden="true" />
+                            <div className="w-full h-full bg-gradient-to-tr from-emerald-500 to-purple-500" aria-hidden="true" />
                         )}
                     </div>
                     <div>
@@ -156,7 +156,7 @@ export const PostCard = ({ author, content, videoUrl, image, likes: initialLikes
                         onClick={handleComment}
                         className={cn(
                             "flex items-center gap-2 transition-colors",
-                            showCommentInput ? "text-blue-400" : "text-slate-400 hover:text-blue-400"
+                            showCommentInput ? "text-emerald-400" : "text-slate-400 hover:text-emerald-400"
                         )}
                         aria-label={`Comment. ${commentCount} comments`}
                         aria-expanded={showCommentInput}

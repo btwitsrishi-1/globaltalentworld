@@ -74,7 +74,7 @@ export default function ActivesPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
 
@@ -87,7 +87,7 @@ export default function ActivesPage() {
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="font-script text-4xl sm:text-5xl text-white mb-2">
+                            <h1 className="font-sans font-light text-4xl sm:text-5xl text-white mb-2">
                                 Active Candidates
                             </h1>
                             <p className="text-slate-400">

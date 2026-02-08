@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { Inter, Pinyon_Script } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/lib/auth-context";
+import { AdminProvider } from "@/lib/admin-context";
 import { JobsProvider } from "@/lib/jobs-context";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SmoothScroll } from "@/components/ui/smooth-scroll";
 import { GrainOverlay } from "@/components/ui/grain-overlay";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const pinyon = Pinyon_Script({
-    weight: "400",
+const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-pinyon",
+    variable: "--font-inter",
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -52,8 +52,7 @@ export default function RootLayout({
             <body
                 className={cn(
                     "min-h-screen bg-background font-sans antialiased",
-                    inter.variable,
-                    pinyon.variable
+                    inter.variable
                 )}
             >
                 <ThemeProvider
@@ -65,9 +64,11 @@ export default function RootLayout({
                     <SmoothScroll>
                         <GrainOverlay />
                         <AuthProvider>
-                            <JobsProvider>
-                                {children}
-                            </JobsProvider>
+                            <AdminProvider>
+                                <JobsProvider>
+                                    {children}
+                                </JobsProvider>
+                            </AdminProvider>
                         </AuthProvider>
                     </SmoothScroll>
                 </ThemeProvider>

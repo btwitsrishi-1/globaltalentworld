@@ -15,7 +15,7 @@ export default function Error({
     }, [error]);
 
     return (
-        <main className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
+        <main className="min-h-screen bg-[#060608] flex items-center justify-center px-4">
             <div className="text-center max-w-md">
                 <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-red-500/10 flex items-center justify-center">
                     <AlertTriangle className="w-8 h-8 text-red-400" />
@@ -26,7 +26,7 @@ export default function Error({
                 </p>
                 <button
                     onClick={reset}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-xl transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl transition-colors"
                 >
                     <RefreshCw className="w-4 h-4" />
                     Try Again

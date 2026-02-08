@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabase";
 import { STORAGE_KEYS } from "./constants";
-import type { Job, Application, ApplicationNote } from "./types";
+import type { Job, Application, ApplicationNote, ListingAccessRequest } from "./types";
 
 interface JobsContextType {
     jobs: Job[];
@@ -19,6 +19,14 @@ interface JobsContextType {
     shortlistApplication: (applicationId: string) => void;
     rejectApplication: (applicationId: string) => void;
     addNoteToApplication: (applicationId: string, note: string, authorId: string, authorName: string) => void;
+    createJob: (job: Omit<Job, 'id' | 'postedDate'>) => void;
+    deleteJob: (jobId: string) => void;
+    getJobsByEmployer: (employerId: string) => Job[];
+    requestListingAccess: (request: Omit<ListingAccessRequest, 'id' | 'requestedAt'>) => void;
+    getAccessRequests: (ownerId: string) => ListingAccessRequest[];
+    approveAccessRequest: (requestId: string) => void;
+    rejectAccessRequest: (requestId: string) => void;
+    getSharedListings: (requesterId: string) => Job[];
 }
 
 interface CandidateData {
@@ -52,6 +60,7 @@ interface SupabaseJobRow {
 export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
     const [allJobs, setAllJobs] = useState<Job[]>([]);
     const [applications, setApplications] = useState<Application[]>([]);
+    const [accessRequests, setAccessRequests] = useState<ListingAccessRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [locationQuery, setLocationQuery] = useState("");
@@ -127,6 +136,23 @@ export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, []);
 
+    // Load access requests from localStorage on mount
+    useEffect(() => {
+        try {
+            const stored = localStorage.getItem(STORAGE_KEYS.ACCESS_REQUESTS);
+            if (stored) {
+                const parsed = JSON.parse(stored);
+                const withDates: ListingAccessRequest[] = parsed.map((req: Record<string, unknown>) => ({
+                    ...req,
+                    requestedAt: new Date(req.requestedAt as string),
+                }));
+                setAccessRequests(withDates);
+            }
+        } catch {
+            localStorage.removeItem(STORAGE_KEYS.ACCESS_REQUESTS);
+        }
+    }, []);
+
     // Save applications to localStorage
     useEffect(() => {
         try {
@@ -137,6 +163,17 @@ export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
             console.warn("Could not save applications to localStorage");
         }
     }, [applications]);
+
+    // Save access requests to localStorage
+    useEffect(() => {
+        try {
+            if (accessRequests.length > 0) {
+                localStorage.setItem(STORAGE_KEYS.ACCESS_REQUESTS, JSON.stringify(accessRequests));
+            }
+        } catch {
+            console.warn("Could not save access requests to localStorage");
+        }
+    }, [accessRequests]);
 
     const applyToJob = (jobId: string, candidateData: CandidateData) => {
         const newApplication: Application = {
@@ -211,6 +248,59 @@ export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
         );
     };
 
+    const createJob = (job: Omit<Job, 'id' | 'postedDate'>) => {
+        const newJob: Job = {
+            ...job,
+            id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            postedDate: new Date(),
+        };
+        setAllJobs((prev) => [newJob, ...prev]);
+    };
+
+    const deleteJob = (jobId: string) => {
+        setAllJobs((prev) => prev.filter((job) => job.id !== jobId));
+    };
+
+    const getJobsByEmployer = useCallback((employerId: string) => {
+        return allJobs.filter((job) => job.employerId === employerId);
+    }, [allJobs]);
+
+    const requestListingAccess = (request: Omit<ListingAccessRequest, 'id' | 'requestedAt'>) => {
+        const newRequest: ListingAccessRequest = {
+            ...request,
+            id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            requestedAt: new Date(),
+        };
+        setAccessRequests((prev) => [...prev, newRequest]);
+    };
+
+    const getAccessRequests = useCallback((ownerId: string) => {
+        return accessRequests.filter((req) => req.ownerId === ownerId);
+    }, [accessRequests]);
+
+    const approveAccessRequest = (requestId: string) => {
+        setAccessRequests((prev) =>
+            prev.map((req) =>
+                req.id === requestId ? { ...req, status: "approved" as const } : req
+            )
+        );
+    };
+
+    const rejectAccessRequest = (requestId: string) => {
+        setAccessRequests((prev) =>
+            prev.map((req) =>
+                req.id === requestId ? { ...req, status: "rejected" as const } : req
+            )
+        );
+    };
+
+    const getSharedListings = useCallback((requesterId: string) => {
+        const approvedRequestIds = accessRequests
+            .filter((req) => req.requesterId === requesterId && req.status === "approved")
+            .map((req) => req.listingId);
+        return allJobs.filter((job) => approvedRequestIds.includes(job.id));
+    }, [accessRequests, allJobs]);
+
     return (
         <JobsContext.Provider
             value={{
@@ -227,6 +317,14 @@ export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
                 shortlistApplication,
                 rejectApplication,
                 addNoteToApplication,
+                createJob,
+                deleteJob,
+                getJobsByEmployer,
+                requestListingAccess,
+                getAccessRequests,
+                approveAccessRequest,
+                rejectAccessRequest,
+                getSharedListings,
             }}
         >
             {children}

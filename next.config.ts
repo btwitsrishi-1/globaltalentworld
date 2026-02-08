@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
             },
         ],
     },
+    // Transpile Three.js packages for compatibility
+    transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
 };
 
 export default nextConfig;

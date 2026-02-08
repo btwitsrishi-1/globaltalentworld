@@ -42,7 +42,7 @@ export const CreatePost = ({ onPost }: CreatePostProps) => {
             className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6 mb-8 group focus-within:border-blue-500/50 transition-colors"
         >
             <div className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex-shrink-0 overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-500 to-cyan-500 flex-shrink-0 overflow-hidden">
                     {user.avatar ? (
                         <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
                     ) : (

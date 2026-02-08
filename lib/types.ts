@@ -9,7 +9,9 @@ export interface User {
     location?: string;
     website?: string;
     cv?: string;
-    role?: 'candidate' | 'employer' | 'both';
+    role?: 'candidate' | 'employer' | 'both' | 'recruiter' | 'admin';
+    recruiterStatus?: 'pending' | 'approved' | 'rejected';
+    recruiterCompany?: string;
 }
 
 // Job Types
@@ -82,4 +84,14 @@ export interface Comment {
     };
     content: string;
     timestamp: Date;
+}
+
+export interface ListingAccessRequest {
+    id: string;
+    requesterId: string;
+    requesterName: string;
+    listingId: string;
+    ownerId: string;
+    status: 'pending' | 'approved' | 'rejected';
+    requestedAt: Date;
 }

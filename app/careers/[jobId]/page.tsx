@@ -63,7 +63,7 @@ export default function JobDetailsPage() {
 
     if (!job) {
         return (
-            <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+            <main className="min-h-screen bg-[#060608] text-white flex flex-col">
                 <CustomCursor />
                 <Navbar />
                 <div className="flex-1 flex items-center justify-center">
@@ -109,7 +109,7 @@ export default function JobDetailsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
 
@@ -282,7 +282,7 @@ export default function JobDetailsPage() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                            className="fixed inset-0 bg-[#060608]/60 backdrop-blur-sm z-50"
                             onClick={() => !applicationSubmitted && setShowApplyModal(false)}
                         />
                         <motion.div
@@ -294,7 +294,7 @@ export default function JobDetailsPage() {
                             aria-modal="true"
                             aria-labelledby="apply-modal-title"
                         >
-                            <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-8 max-w-md w-full">
+                            <div className="bg-[#0a0a0f] border border-emerald-500/20 rounded-2xl p-8 max-w-md w-full">
                                 {applicationSubmitted ? (
                                     <div className="text-center">
                                         <motion.div
@@ -349,8 +349,8 @@ export default function JobDetailsPage() {
                                                 </p>
                                             </div>
 
-                                            <div className="flex items-start gap-3 text-sm text-slate-300 bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
-                                                <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                                            <div className="flex items-start gap-3 text-sm text-slate-300 bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4">
+                                                <AlertCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                                 <p>
                                                     Your profile information and CV will be shared
                                                     with the employer.

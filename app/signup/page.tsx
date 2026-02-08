@@ -7,17 +7,28 @@ import { Navbar } from "@/components/layout/navbar";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { AlertCircle, Loader2, User, AtSign, Mail, Lock } from "lucide-react";
+import { AlertCircle, Loader2, User, AtSign, Mail, Lock, Briefcase, Shield } from "lucide-react";
+
+type RoleOption = "candidate" | "employer" | "recruiter";
+
+const ROLE_OPTIONS: { value: RoleOption; label: string; icon: typeof User; description: string }[] = [
+    { value: "candidate", label: "Candidate", icon: User, description: "Find your dream role" },
+    { value: "employer", label: "Employer", icon: Briefcase, description: "Hire top talent" },
+    { value: "recruiter", label: "Recruiter", icon: Shield, description: "Connect talent & companies" },
+];
 
 interface FormErrors {
     name?: string;
     handle?: string;
     email?: string;
     password?: string;
+    recruiterCompany?: string;
     general?: string;
 }
 
 export default function SignUpPage() {
+    const [role, setRole] = useState<RoleOption>("candidate");
+    const [recruiterCompany, setRecruiterCompany] = useState("");
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [handle, setHandle] = useState("");
@@ -55,6 +66,10 @@ export default function SignUpPage() {
             newErrors.password = "Password must be at least 6 characters";
         }
 
+        if (role === "recruiter" && !recruiterCompany.trim()) {
+            newErrors.recruiterCompany = "Company name is required for recruiters";
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -68,7 +83,7 @@ export default function SignUpPage() {
 
         try {
             const formattedHandle = handle.startsWith("@") ? handle : `@${handle}`;
-            const result = await signup(name.trim(), email.trim(), formattedHandle, password);
+            const result = await signup(name.trim(), email.trim(), formattedHandle, password, role);
 
             if (result.error) {
                 setErrors({ general: result.error });
@@ -105,7 +120,7 @@ export default function SignUpPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 flex items-center justify-center relative overflow-hidden">
+        <main className="min-h-screen bg-[#060608] flex items-center justify-center relative overflow-hidden">
             <CustomCursor />
             <Navbar />
 
@@ -136,6 +151,67 @@ export default function SignUpPage() {
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+                    {/* Role Selector */}
+                    <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-3">I am a...</label>
+                        <div className="grid grid-cols-3 gap-3">
+                            {ROLE_OPTIONS.map((option) => {
+                                const Icon = option.icon;
+                                const isActive = role === option.value;
+                                return (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setRole(option.value)}
+                                        className={`flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                                            isActive
+                                                ? "border-blue-500 bg-blue-500/10 text-white"
+                                                : "border-white/10 bg-white/5 text-slate-400 hover:border-white/20 hover:text-slate-300"
+                                        }`}
+                                        disabled={isLoading}
+                                    >
+                                        <Icon className={`w-5 h-5 ${isActive ? "text-blue-400" : ""}`} />
+                                        <span className="text-xs font-medium">{option.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {role === "recruiter" && (
+                            <motion.p
+                                initial={{ opacity: 0, y: -5 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-2 text-xs text-amber-400/80 flex items-center gap-1.5"
+                            >
+                                <Shield className="w-3 h-3" />
+                                Requires admin approval
+                            </motion.p>
+                        )}
+                    </div>
+
+                    {/* Recruiter Company */}
+                    {role === "recruiter" && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                        >
+                            <label htmlFor="recruiterCompany" className="block text-sm font-medium text-slate-300 mb-2">Company Name</label>
+                            <div className="relative">
+                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" aria-hidden="true" />
+                                <input
+                                    id="recruiterCompany" name="recruiterCompany" type="text" required
+                                    value={recruiterCompany}
+                                    onChange={(e) => { setRecruiterCompany(e.target.value); clearError("recruiterCompany"); }}
+                                    className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.recruiterCompany ? "border-red-500" : "border-white/10"}`}
+                                    placeholder="Your company name"
+                                    disabled={isLoading}
+                                />
+                            </div>
+                            {renderError("recruiterCompany", "recruiterCompany-error")}
+                        </motion.div>
+                    )}
+
                     {/* Name */}
                     <div>
                         <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
@@ -145,7 +221,7 @@ export default function SignUpPage() {
                                 id="name" name="name" type="text" autoComplete="name" required
                                 value={name}
                                 onChange={(e) => { setName(e.target.value); clearError("name"); }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.name ? "border-red-500" : "border-white/10"}`}
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.name ? "border-red-500" : "border-white/10"}`}
                                 placeholder="John Doe"
                                 disabled={isLoading}
                             />
@@ -162,7 +238,7 @@ export default function SignUpPage() {
                                 id="handle" name="handle" type="text" autoComplete="username" required
                                 value={handle}
                                 onChange={(e) => { setHandle(e.target.value); clearError("handle"); }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.handle ? "border-red-500" : "border-white/10"}`}
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.handle ? "border-red-500" : "border-white/10"}`}
                                 placeholder="johndoe"
                                 disabled={isLoading}
                             />
@@ -179,7 +255,7 @@ export default function SignUpPage() {
                                 id="email" name="email" type="email" autoComplete="email" required
                                 value={email}
                                 onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.email ? "border-red-500" : "border-white/10"}`}
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.email ? "border-red-500" : "border-white/10"}`}
                                 placeholder="john@example.com"
                                 disabled={isLoading}
                             />
@@ -196,7 +272,7 @@ export default function SignUpPage() {
                                 id="password" name="password" type="password" autoComplete="new-password" required
                                 value={password}
                                 onChange={(e) => { setPassword(e.target.value); clearError("password"); }}
-                                className={`w-full bg-slate-900/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.password ? "border-red-500" : "border-white/10"}`}
+                                className={`w-full bg-[#0a0a0f]/50 border rounded-xl pl-12 pr-4 py-3 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-all ${errors.password ? "border-red-500" : "border-white/10"}`}
                                 placeholder="At least 6 characters"
                                 disabled={isLoading}
                             />

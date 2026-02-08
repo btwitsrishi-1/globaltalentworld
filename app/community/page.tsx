@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { Sidebar } from "@/components/community/sidebar";
@@ -12,6 +13,8 @@ import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, MessageSquare } from "lucide-react";
 import Link from "next/link";
+
+const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
 
 const INITIAL_POSTS = [
     {
@@ -130,14 +133,15 @@ export default function CommunityPage() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-slate-200 flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-slate-200 flex flex-col">
             <CustomCursor />
             <Navbar />
-            <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-20 flex gap-8 relative w-full">
+            <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
+            <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-20 flex gap-8 relative z-10 w-full">
                 <Sidebar />
                 <div className="flex-1 max-w-2xl mx-auto space-y-6">
                     <div className="mb-8">
-                        <h1 className="font-script text-4xl sm:text-5xl text-white mb-2">Community Feed</h1>
+                        <h1 className="font-sans font-light text-4xl sm:text-5xl text-white mb-2">Community Feed</h1>
                         <p className="text-slate-400">See what the world&apos;s top talent is creating.</p>
                     </div>
                     {user ? <CreatePost onPost={handleNewPost} /> : <LoginPrompt />}

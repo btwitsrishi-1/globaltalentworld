@@ -94,7 +94,7 @@ export default function EmployerDashboard() {
     };
 
     return (
-        <main className="min-h-screen bg-slate-950 text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
             <CustomCursor />
             <Navbar />
 
@@ -106,7 +106,7 @@ export default function EmployerDashboard() {
                 >
                     {/* Header */}
                     <div>
-                        <h1 className="font-script text-4xl sm:text-5xl text-white mb-2">
+                        <h1 className="font-sans font-light text-4xl sm:text-5xl text-white mb-2">
                             Employer Dashboard
                         </h1>
                         <p className="text-slate-400">
@@ -118,7 +118,7 @@ export default function EmployerDashboard() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-6">
                             <div className="flex items-center gap-3 mb-2">
-                                <Users className="w-5 h-5 text-blue-400" />
+                                <Users className="w-5 h-5 text-emerald-400" />
                                 <span className="text-sm text-slate-400">Total Applications</span>
                             </div>
                             <p className="text-3xl font-bold text-white">{stats.total}</p>
@@ -279,7 +279,7 @@ export default function EmployerDashboard() {
                                         <div className="flex sm:flex-col gap-2">
                                             <button
                                                 onClick={() => setSelectedApplication(application)}
-                                                className="flex-1 sm:flex-initial px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                                                className="flex-1 sm:flex-initial px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                                             >
                                                 <MessageSquare className="w-4 h-4" />
                                                 <span className="hidden sm:inline">Details</span>
@@ -330,7 +330,7 @@ export default function EmployerDashboard() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                            className="fixed inset-0 bg-[#060608]/60 backdrop-blur-sm z-50"
                             onClick={() => setSelectedApplication(null)}
                         />
                         <motion.div
@@ -343,7 +343,7 @@ export default function EmployerDashboard() {
                             aria-labelledby="details-modal-title"
                         >
                             <div className="min-h-full flex items-center justify-center p-4">
-                                <div className="bg-slate-900 border border-emerald-500/20 rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+                                <div className="bg-[#0a0a0f] border border-emerald-500/20 rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
                                     {/* Header */}
                                     <div className="flex items-start justify-between mb-6">
                                         <div>

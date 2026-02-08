@@ -57,7 +57,7 @@ export const JobCard = ({ id, role, company, location, salary, type, delay = 0 }
                         <p className="text-slate-400 font-medium">{company}</p>
                     </div>
                     <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center border border-white/5 group-hover:border-blue-500/30 transition-colors">
-                        <Briefcase className="w-5 h-5 text-blue-400" />
+                        <Briefcase className="w-5 h-5 text-emerald-400" />
                     </div>
                 </div>
 
@@ -74,7 +74,7 @@ export const JobCard = ({ id, role, company, location, salary, type, delay = 0 }
                 </div>
 
                 <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 w-0 group-hover:w-full transition-all duration-500 ease-out" />
+                    <div className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 w-0 group-hover:w-full transition-all duration-500 ease-out" />
                 </div>
             </div>
         </motion.div>
