@@ -63,7 +63,7 @@ export function BackgroundLogo3D({ className = '' }: { className?: string }) {
     <div className={`pointer-events-none ${className}`}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
-        gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
+        gl={{ alpha: true, antialias: false, powerPreference: 'high-performance', premultipliedAlpha: false }}
         dpr={[1, 1]}
         style={{ background: 'transparent' }}
       >

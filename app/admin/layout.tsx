@@ -16,6 +16,7 @@ import {
     X,
     Shield,
     ChevronRight,
+    Star,
 } from "lucide-react";
 import { useAdmin } from "@/lib/admin-context";
 
@@ -30,6 +31,7 @@ const navItems: NavItem[] = [
     { label: "Users", href: "/admin/users", icon: Users },
     { label: "Community", href: "/admin/community", icon: MessageSquare },
     { label: "Listings", href: "/admin/listings", icon: Briefcase },
+    { label: "Reviews", href: "/admin/reviews", icon: Star },
     { label: "Insights", href: "/admin/insights", icon: Lightbulb },
     { label: "About", href: "/admin/about", icon: Info },
 ];

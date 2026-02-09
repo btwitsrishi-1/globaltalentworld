@@ -33,64 +33,7 @@ interface MockPost {
     flagReason?: string;
 }
 
-const mockPosts: MockPost[] = [
-    {
-        id: "1",
-        author: { name: "Sarah Chen", handle: "@sarahchen", avatar: "https://ui-avatars.com/api/?name=Sarah+Chen&background=3b82f6&color=fff" },
-        content: "Just landed my dream role as a Senior Frontend Engineer! Thanks to this amazing community for all the support. The interview prep resources here were incredibly helpful.",
-        likes: 42,
-        comments: 8,
-        timestamp: "2 hours ago",
-        status: "visible",
-    },
-    {
-        id: "2",
-        author: { name: "James Wilson", handle: "@jameswilson", avatar: "https://ui-avatars.com/api/?name=James+Wilson&background=10b981&color=fff" },
-        content: "Looking for a React developer to join our team at TechCorp. We're building something incredible in the AI space. DM me if interested!",
-        likes: 15,
-        comments: 23,
-        timestamp: "5 hours ago",
-        status: "visible",
-    },
-    {
-        id: "3",
-        author: { name: "Alex Morgan", handle: "@alexmorgan", avatar: "https://ui-avatars.com/api/?name=Alex+Morgan&background=8b5cf6&color=fff" },
-        content: "This is clearly spam content that should be moderated. Buy cheap products at shady-link.com now! Best deals on the internet!",
-        likes: 0,
-        comments: 1,
-        timestamp: "6 hours ago",
-        status: "flagged",
-        flagReason: "Spam / promotional content",
-    },
-    {
-        id: "4",
-        author: { name: "Emily Zhang", handle: "@emilyzhang", avatar: "https://ui-avatars.com/api/?name=Emily+Zhang&background=ec4899&color=fff" },
-        content: "Great article on remote work best practices! The shift to hybrid work is creating new opportunities for global talent. What do you all think about async communication?",
-        likes: 28,
-        comments: 12,
-        timestamp: "1 day ago",
-        status: "visible",
-    },
-    {
-        id: "5",
-        author: { name: "David Brown", handle: "@davidbrown", avatar: "https://ui-avatars.com/api/?name=David+Brown&background=06b6d4&color=fff" },
-        content: "Sharing my experience transitioning from traditional recruiting to tech recruiting. The landscape has changed dramatically in the last 5 years.",
-        likes: 35,
-        comments: 7,
-        timestamp: "1 day ago",
-        status: "hidden",
-    },
-    {
-        id: "6",
-        author: { name: "Nina Kowalski", handle: "@ninakowalski", avatar: "https://ui-avatars.com/api/?name=Nina+Kowalski&background=a855f7&color=fff" },
-        content: "Inappropriate content that violates community guidelines. Contains offensive language targeting specific groups.",
-        likes: 2,
-        comments: 0,
-        timestamp: "2 days ago",
-        status: "flagged",
-        flagReason: "Hate speech / offensive content",
-    },
-];
+const mockPosts: MockPost[] = [];
 
 const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
     visible: { label: "Visible", color: "bg-emerald-500/10 text-emerald-400", icon: Eye },
@@ -162,6 +105,17 @@ export default function AdminCommunityPage() {
                 )}
             </div>
 
+            {posts.length === 0 && (
+                <div className="card-embossed p-16 text-center">
+                    <MessageSquare className="w-10 h-10 text-white/10 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-white/60 mb-2">No Community Posts Yet</h3>
+                    <p className="text-white/30 text-sm max-w-md mx-auto">
+                        Community posts will appear here as users share content on the platform. You&apos;ll be able to moderate, flag, and manage visibility.
+                    </p>
+                </div>
+            )}
+
+            {posts.length > 0 && (<>
             {/* Search and filters */}
             <div className="flex flex-col sm:flex-row gap-3">
                 <div className="relative flex-1">
@@ -313,6 +267,7 @@ export default function AdminCommunityPage() {
                     <p className="text-white/30 text-sm">No posts found matching your criteria.</p>
                 </div>
             )}
+            </>)}
 
             {/* Preview modal */}
             <AnimatePresence>

@@ -76,7 +76,7 @@ export function NavbarLogo3D() {
     <div className="w-8 h-8 rounded-lg overflow-hidden">
       <Canvas
         camera={{ position: [0, 0, 3], fov: 45 }}
-        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance' }}
+        gl={{ alpha: true, antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
         dpr={[1, 2]}
         style={{ background: 'transparent' }}
       >
