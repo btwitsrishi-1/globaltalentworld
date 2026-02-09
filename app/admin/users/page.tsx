@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -23,7 +23,9 @@ import {
     Users,
     AlertTriangle,
     X,
+    Loader2,
 } from "lucide-react";
+import { fetchAdminUsers, updateUserBanStatus, updateRecruiterStatus, deleteUsers as deleteUsersApi } from "@/lib/admin-data";
 
 interface AdminUser {
     id: string;
@@ -54,12 +56,40 @@ const statusColors: Record<string, string> = {
 
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<AdminUser[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [roleFilter, setRoleFilter] = useState<string>("all");
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [activeMenu, setActiveMenu] = useState<string | null>(null);
     const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    useEffect(() => {
+        async function loadUsers() {
+            try {
+                const data = await fetchAdminUsers();
+                const mapped: AdminUser[] = data.map((u: any) => ({
+                    id: u.id,
+                    name: u.name || "Unknown",
+                    email: u.email || "",
+                    handle: u.handle || "",
+                    avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'U')}&background=3b82f6&color=fff`,
+                    role: u.recruiter_status ? "recruiter" : u.role === "employer" ? "employer" : "candidate",
+                    recruiterStatus: u.recruiter_status || undefined,
+                    recruiterCompany: u.recruiter_company || undefined,
+                    location: u.location || "Not specified",
+                    joinedDate: new Date(u.created_at).toLocaleDateString(),
+                    isBanned: u.is_banned || false,
+                }));
+                setUsers(mapped);
+            } catch (err) {
+                console.error("Failed to load users:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadUsers();
+    }, []);
 
     const filteredUsers = users.filter((user) => {
         const matchesSearch =
@@ -73,30 +103,41 @@ export default function AdminUsersPage() {
         return matchesSearch && matchesRole;
     });
 
-    const handleApproveRecruiter = (userId: string) => {
-        setUsers((prev) =>
-            prev.map((u) =>
-                u.id === userId ? { ...u, recruiterStatus: "approved" as const } : u
-            )
-        );
+    const handleApproveRecruiter = async (userId: string) => {
+        const success = await updateRecruiterStatus(userId, "approved");
+        if (success) {
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === userId ? { ...u, recruiterStatus: "approved" as const } : u
+                )
+            );
+        }
         setActiveMenu(null);
     };
 
-    const handleRejectRecruiter = (userId: string) => {
-        setUsers((prev) =>
-            prev.map((u) =>
-                u.id === userId ? { ...u, recruiterStatus: "rejected" as const } : u
-            )
-        );
+    const handleRejectRecruiter = async (userId: string) => {
+        const success = await updateRecruiterStatus(userId, "rejected");
+        if (success) {
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === userId ? { ...u, recruiterStatus: "rejected" as const } : u
+                )
+            );
+        }
         setActiveMenu(null);
     };
 
-    const handleToggleBan = (userId: string) => {
-        setUsers((prev) =>
-            prev.map((u) =>
-                u.id === userId ? { ...u, isBanned: !u.isBanned } : u
-            )
-        );
+    const handleToggleBan = async (userId: string) => {
+        const user = users.find((u) => u.id === userId);
+        if (!user) return;
+        const success = await updateUserBanStatus(userId, !user.isBanned);
+        if (success) {
+            setUsers((prev) =>
+                prev.map((u) =>
+                    u.id === userId ? { ...u, isBanned: !u.isBanned } : u
+                )
+            );
+        }
         setActiveMenu(null);
     };
 
@@ -121,14 +162,28 @@ export default function AdminUsersPage() {
         }
     };
 
-    const handleDeleteSelected = () => {
-        setUsers((prev) => prev.filter((u) => !selectedUsers.has(u.id)));
-        setSelectedUsers(new Set());
+    const handleDeleteSelected = async () => {
+        const success = await deleteUsersApi(Array.from(selectedUsers));
+        if (success) {
+            setUsers((prev) => prev.filter((u) => !selectedUsers.has(u.id)));
+            setSelectedUsers(new Set());
+        }
         setShowDeleteConfirm(false);
     };
 
     const isAllSelected = filteredUsers.length > 0 && selectedUsers.size === filteredUsers.length;
     const isSomeSelected = selectedUsers.size > 0 && selectedUsers.size < filteredUsers.length;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-blue-400 animate-spin mx-auto mb-3" />
+                    <p className="text-white/40 text-sm">Loading users...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -391,8 +446,11 @@ export default function AdminUsersPage() {
                                                         )}
                                                     </button>
                                                     <button
-                                                        onClick={() => {
-                                                            setUsers((prev) => prev.filter((u) => u.id !== user.id));
+                                                        onClick={async () => {
+                                                            const success = await deleteUsersApi([user.id]);
+                                                            if (success) {
+                                                                setUsers((prev) => prev.filter((u) => u.id !== user.id));
+                                                            }
                                                             setActiveMenu(null);
                                                         }}
                                                         className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/[0.08] transition-colors"

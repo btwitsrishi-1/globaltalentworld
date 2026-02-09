@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -23,7 +23,9 @@ import {
     ChevronRight,
     ExternalLink,
     Trash2,
+    Loader2,
 } from "lucide-react";
+import { fetchAdminListings, fetchListingApplicants, updateJob, deleteJob as deleteJobApi, updateApplicationStatus } from "@/lib/admin-data";
 
 interface Applicant {
     id: string;
@@ -72,6 +74,7 @@ const statusColors: Record<string, string> = {
 
 export default function AdminListingsPage() {
     const [listings, setListings] = useState<AdminListing[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [typeFilter, setTypeFilter] = useState<string>("all");
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -88,6 +91,39 @@ export default function AdminListingsPage() {
     const [editType, setEditType] = useState<AdminListing["type"]>("Full-time");
     const [editDescription, setEditDescription] = useState("");
 
+    useEffect(() => {
+        async function loadListings() {
+            try {
+                const data = await fetchAdminListings();
+                const mapped: AdminListing[] = data.map((j: any) => ({
+                    id: j.id,
+                    role: j.role,
+                    company: j.company,
+                    location: j.location,
+                    salary: j.salary,
+                    type: j.type,
+                    description: j.description || "",
+                    applications: 0, // Will be filled when viewing applicants
+                    postedDate: new Date(j.posted_date || j.created_at).toLocaleDateString(),
+                    isActive: j.is_active ?? true,
+                    createdBy: {
+                        name: j.employer?.name || "Unknown",
+                        email: j.employer?.email || "",
+                        avatar: j.employer?.avatar || `https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff`,
+                        handle: j.employer?.handle || "",
+                    },
+                    applicants: [], // Loaded on demand
+                }));
+                setListings(mapped);
+            } catch (err) {
+                console.error("Failed to load listings:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadListings();
+    }, []);
+
     const filteredListings = listings.filter((listing) => {
         const matchesSearch =
             !searchQuery ||
@@ -101,17 +137,25 @@ export default function AdminListingsPage() {
         return matchesSearch && matchesType;
     });
 
-    const handleToggleActive = (listingId: string) => {
-        setListings((prev) =>
-            prev.map((l) =>
-                l.id === listingId ? { ...l, isActive: !l.isActive } : l
-            )
-        );
+    const handleToggleActive = async (listingId: string) => {
+        const listing = listings.find((l) => l.id === listingId);
+        if (!listing) return;
+        const success = await updateJob(listingId, { is_active: !listing.isActive });
+        if (success) {
+            setListings((prev) =>
+                prev.map((l) =>
+                    l.id === listingId ? { ...l, isActive: !l.isActive } : l
+                )
+            );
+        }
     };
 
-    const handleDeleteListing = (listingId: string) => {
-        setListings((prev) => prev.filter((l) => l.id !== listingId));
-        if (previewListing?.id === listingId) setPreviewListing(null);
+    const handleDeleteListing = async (listingId: string) => {
+        const success = await deleteJobApi(listingId);
+        if (success) {
+            setListings((prev) => prev.filter((l) => l.id !== listingId));
+            if (previewListing?.id === listingId) setPreviewListing(null);
+        }
     };
 
     const openEdit = (listing: AdminListing) => {
@@ -124,47 +168,82 @@ export default function AdminListingsPage() {
         setEditDescription(listing.description);
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
         if (!editingListing) return;
-        setListings((prev) =>
-            prev.map((l) =>
-                l.id === editingListing.id
-                    ? { ...l, role: editRole, company: editCompany, location: editLocation, salary: editSalary, type: editType, description: editDescription }
-                    : l
-            )
-        );
+        const success = await updateJob(editingListing.id, {
+            role: editRole,
+            company: editCompany,
+            location: editLocation,
+            salary: editSalary,
+            type: editType,
+            description: editDescription,
+        });
+        if (success) {
+            setListings((prev) =>
+                prev.map((l) =>
+                    l.id === editingListing.id
+                        ? { ...l, role: editRole, company: editCompany, location: editLocation, salary: editSalary, type: editType, description: editDescription }
+                        : l
+                )
+            );
+        }
         setEditingListing(null);
     };
 
-    const handleUpdateApplicantStatus = (listingId: string, applicantId: string, newStatus: Applicant["status"]) => {
+    const handleViewApplicants = async (listing: AdminListing) => {
+        const appData = await fetchListingApplicants(listing.id);
+        const mappedApplicants: Applicant[] = appData.map((a: any) => ({
+            id: a.id,
+            name: a.candidate?.name || "Unknown",
+            email: a.candidate?.email || "",
+            handle: a.candidate?.handle || "",
+            avatar: a.candidate?.avatar || `https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff`,
+            cv: a.candidate?.cv || undefined,
+            location: a.candidate?.location || undefined,
+            appliedDate: new Date(a.applied_date || a.created_at).toLocaleDateString(),
+            status: a.status || "pending",
+        }));
+        const updatedListing = { ...listing, applicants: mappedApplicants };
+        setViewingApplicants(updatedListing);
+        // Also update the listing in the array
         setListings((prev) =>
             prev.map((l) =>
-                l.id === listingId
-                    ? {
-                          ...l,
-                          applicants: l.applicants.map((a) =>
-                              a.id === applicantId ? { ...a, status: newStatus } : a
-                          ),
-                      }
-                    : l
+                l.id === listing.id ? { ...l, applicants: mappedApplicants, applications: mappedApplicants.length } : l
             )
         );
-        if (viewingApplicants?.id === listingId) {
-            setViewingApplicants((prev) =>
-                prev
-                    ? {
-                          ...prev,
-                          applicants: prev.applicants.map((a) =>
-                              a.id === applicantId ? { ...a, status: newStatus } : a
-                          ),
-                      }
-                    : null
+    };
+
+    const handleUpdateApplicantStatus = async (listingId: string, applicantId: string, newStatus: Applicant["status"]) => {
+        const success = await updateApplicationStatus(applicantId, newStatus);
+        if (success) {
+            setListings((prev) =>
+                prev.map((l) =>
+                    l.id === listingId
+                        ? { ...l, applicants: l.applicants.map((a) => a.id === applicantId ? { ...a, status: newStatus } : a) }
+                        : l
+                )
             );
+            if (viewingApplicants?.id === listingId) {
+                setViewingApplicants((prev) =>
+                    prev ? { ...prev, applicants: prev.applicants.map((a) => a.id === applicantId ? { ...a, status: newStatus } : a) } : null
+                );
+            }
         }
     };
 
     const activeCount = listings.filter((l) => l.isActive).length;
     const totalApplications = listings.reduce((sum, l) => sum + l.applications, 0);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-blue-400 animate-spin mx-auto mb-3" />
+                    <p className="text-white/40 text-sm">Loading listings...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -275,7 +354,7 @@ export default function AdminListingsPage() {
 
                                             {/* View applicants */}
                                             <button
-                                                onClick={() => setViewingApplicants(listing)}
+                                                onClick={() => handleViewApplicants(listing)}
                                                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs text-white/40 hover:text-cyan-400 hover:bg-cyan-500/[0.06] transition-all"
                                             >
                                                 <Users className="w-3.5 h-3.5" />

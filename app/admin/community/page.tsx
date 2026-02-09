@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -15,9 +15,11 @@ import {
     CheckCircle,
     Filter,
     ChevronDown,
+    Loader2,
 } from "lucide-react";
+import { fetchAdminPosts, updatePost, deletePost as deletePostApi } from "@/lib/admin-data";
 
-interface MockPost {
+interface CommunityPost {
     id: string;
     author: {
         name: string;
@@ -33,8 +35,6 @@ interface MockPost {
     flagReason?: string;
 }
 
-const mockPosts: MockPost[] = [];
-
 const statusConfig: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
     visible: { label: "Visible", color: "bg-emerald-500/10 text-emerald-400", icon: Eye },
     hidden: { label: "Hidden", color: "bg-amber-500/10 text-amber-400", icon: EyeOff },
@@ -42,11 +42,41 @@ const statusConfig: Record<string, { label: string; color: string; icon: React.C
 };
 
 export default function AdminCommunityPage() {
-    const [posts, setPosts] = useState<MockPost[]>(mockPosts);
+    const [posts, setPosts] = useState<CommunityPost[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [previewPost, setPreviewPost] = useState<MockPost | null>(null);
+    const [previewPost, setPreviewPost] = useState<CommunityPost | null>(null);
+
+    useEffect(() => {
+        async function loadPosts() {
+            try {
+                const data = await fetchAdminPosts();
+                const mapped: CommunityPost[] = data.map((p: any) => ({
+                    id: p.id,
+                    author: {
+                        name: p.author?.name || "Unknown",
+                        handle: p.author?.handle || "",
+                        avatar: p.author?.avatar || `https://ui-avatars.com/api/?name=U&background=3b82f6&color=fff`,
+                    },
+                    content: p.content || "",
+                    image: p.image || undefined,
+                    likes: p.likes_count || 0,
+                    comments: p.comments_count || 0,
+                    timestamp: new Date(p.created_at).toLocaleDateString(),
+                    status: (p.status || "visible") as CommunityPost["status"],
+                    flagReason: p.flag_reason || undefined,
+                }));
+                setPosts(mapped);
+            } catch (err) {
+                console.error("Failed to load posts:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadPosts();
+    }, []);
 
     const filteredPosts = posts.filter((post) => {
         const matchesSearch =
@@ -60,34 +90,47 @@ export default function AdminCommunityPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const handleToggleVisibility = (postId: string) => {
-        setPosts((prev) =>
-            prev.map((p) => {
-                if (p.id === postId) {
-                    return { ...p, status: p.status === "hidden" ? "visible" : "hidden" };
-                }
-                return p;
-            })
-        );
+    const handleToggleVisibility = async (postId: string) => {
+        const post = posts.find((p) => p.id === postId);
+        if (!post) return;
+        const newStatus = post.status === "hidden" ? "visible" : "hidden";
+        const success = await updatePost(postId, { status: newStatus });
+        if (success) {
+            setPosts((prev) =>
+                prev.map((p) => p.id === postId ? { ...p, status: newStatus as CommunityPost["status"] } : p)
+            );
+        }
     };
 
-    const handleDelete = (postId: string) => {
-        setPosts((prev) => prev.filter((p) => p.id !== postId));
-        if (previewPost?.id === postId) setPreviewPost(null);
+    const handleDelete = async (postId: string) => {
+        const success = await deletePostApi(postId);
+        if (success) {
+            setPosts((prev) => prev.filter((p) => p.id !== postId));
+            if (previewPost?.id === postId) setPreviewPost(null);
+        }
     };
 
-    const handleDismissFlag = (postId: string) => {
-        setPosts((prev) =>
-            prev.map((p) => {
-                if (p.id === postId) {
-                    return { ...p, status: "visible", flagReason: undefined };
-                }
-                return p;
-            })
-        );
+    const handleDismissFlag = async (postId: string) => {
+        const success = await updatePost(postId, { status: "visible", flag_reason: null });
+        if (success) {
+            setPosts((prev) =>
+                prev.map((p) => p.id === postId ? { ...p, status: "visible" as const, flagReason: undefined } : p)
+            );
+        }
     };
 
     const flaggedCount = posts.filter((p) => p.status === "flagged").length;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-blue-400 animate-spin mx-auto mb-3" />
+                    <p className="text-white/40 text-sm">Loading community posts...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">

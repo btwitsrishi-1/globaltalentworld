@@ -62,8 +62,7 @@ const rippleFragmentShader = `
     float spec = pow(max(dot(vNormal, halfDir), 0.0), 48.0);
     finalColor += vec3(0.6, 0.85, 1.0) * spec * 0.35;
 
-    float alpha = 0.85 + fresnel * 0.15;
-    gl_FragColor = vec4(finalColor, alpha);
+    gl_FragColor = vec4(finalColor, 1.0);
   }
 `
 
@@ -142,7 +141,6 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
           vertexShader: rippleVertexShader,
           fragmentShader: rippleFragmentShader,
           side: THREE.DoubleSide,
-          transparent: true,
         })
         child.material = shaderMat
         materialRef.current = shaderMat

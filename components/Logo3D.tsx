@@ -26,8 +26,8 @@ export function Logo3D({ scrollBased = false }: { scrollBased?: boolean }) {
             roughness: 0.15,
             emissive: 0x059669, // Dark green emissive
             emissiveIntensity: 0.35,
-            transparent: true,
-            opacity: 0.95,
+            transparent: false,
+            opacity: 1.0,
           })
           child.material = material
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -17,7 +17,9 @@ import {
     Filter,
     ChevronDown,
     AlertTriangle,
+    Loader2,
 } from "lucide-react";
+import { fetchAdminReviews, createReview, updateReview, deleteReview as deleteReviewApi } from "@/lib/admin-data";
 
 interface Review {
     id: string;
@@ -35,6 +37,7 @@ interface Review {
 
 export default function AdminReviewsPage() {
     const [reviews, setReviews] = useState<Review[]>([]);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [statusFilter, setStatusFilter] = useState<string>("all");
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
@@ -47,6 +50,33 @@ export default function AdminReviewsPage() {
     const [formTitle, setFormTitle] = useState("");
     const [formContent, setFormContent] = useState("");
     const [formCompany, setFormCompany] = useState("");
+
+    useEffect(() => {
+        async function loadReviews() {
+            try {
+                const data = await fetchAdminReviews();
+                const mapped: Review[] = data.map((r: any) => ({
+                    id: r.id,
+                    author: r.author_name || "Unknown",
+                    authorAvatar: r.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.author_name || 'U')}&background=3b82f6&color=fff`,
+                    rating: r.rating,
+                    title: r.title,
+                    content: r.content,
+                    company: r.company || undefined,
+                    date: new Date(r.created_at).toLocaleDateString(),
+                    isVisible: r.is_visible ?? true,
+                    isFlagged: r.is_flagged ?? false,
+                    flagReason: r.flag_reason || undefined,
+                }));
+                setReviews(mapped);
+            } catch (err) {
+                console.error("Failed to load reviews:", err);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadReviews();
+    }, []);
 
     const filteredReviews = reviews.filter((review) => {
         const matchesSearch =
@@ -65,24 +95,33 @@ export default function AdminReviewsPage() {
         return matchesSearch && matchesStatus;
     });
 
-    const handleToggleVisibility = (reviewId: string) => {
-        setReviews((prev) =>
-            prev.map((r) =>
-                r.id === reviewId ? { ...r, isVisible: !r.isVisible } : r
-            )
-        );
+    const handleToggleVisibility = async (reviewId: string) => {
+        const review = reviews.find((r) => r.id === reviewId);
+        if (!review) return;
+        const success = await updateReview(reviewId, { is_visible: !review.isVisible });
+        if (success) {
+            setReviews((prev) =>
+                prev.map((r) => r.id === reviewId ? { ...r, isVisible: !r.isVisible } : r)
+            );
+        }
     };
 
-    const handleDelete = (reviewId: string) => {
-        setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    const handleDelete = async (reviewId: string) => {
+        const success = await deleteReviewApi(reviewId);
+        if (success) {
+            setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+        }
     };
 
-    const handleDismissFlag = (reviewId: string) => {
-        setReviews((prev) =>
-            prev.map((r) =>
-                r.id === reviewId ? { ...r, isFlagged: false, flagReason: undefined } : r
-            )
-        );
+    const handleDismissFlag = async (reviewId: string) => {
+        const success = await updateReview(reviewId, { is_flagged: false, flag_reason: null });
+        if (success) {
+            setReviews((prev) =>
+                prev.map((r) =>
+                    r.id === reviewId ? { ...r, isFlagged: false, flagReason: undefined } : r
+                )
+            );
+        }
     };
 
     const resetForm = () => {
@@ -109,38 +148,51 @@ export default function AdminReviewsPage() {
         setShowNewReview(true);
     };
 
-    const handleSaveReview = () => {
+    const handleSaveReview = async () => {
         if (!formAuthor.trim() || !formTitle.trim() || !formContent.trim()) return;
 
         if (editingReview) {
-            setReviews((prev) =>
-                prev.map((r) =>
-                    r.id === editingReview.id
-                        ? {
-                              ...r,
-                              author: formAuthor,
-                              rating: formRating,
-                              title: formTitle,
-                              content: formContent,
-                              company: formCompany || undefined,
-                          }
-                        : r
-                )
-            );
+            const success = await updateReview(editingReview.id, {
+                author_name: formAuthor,
+                rating: formRating,
+                title: formTitle,
+                content: formContent,
+                company: formCompany || null,
+            });
+            if (success) {
+                setReviews((prev) =>
+                    prev.map((r) =>
+                        r.id === editingReview.id
+                            ? { ...r, author: formAuthor, rating: formRating, title: formTitle, content: formContent, company: formCompany || undefined }
+                            : r
+                    )
+                );
+            }
         } else {
-            const newReview: Review = {
-                id: Date.now().toString(),
-                author: formAuthor,
-                authorAvatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formAuthor)}&background=${Math.floor(Math.random() * 16777215).toString(16)}&color=fff`,
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(formAuthor)}&background=${Math.floor(Math.random() * 16777215).toString(16)}&color=fff`;
+            const created = await createReview({
+                author_name: formAuthor,
+                author_avatar: avatarUrl,
                 rating: formRating,
                 title: formTitle,
                 content: formContent,
                 company: formCompany || undefined,
-                date: new Date().toISOString().split("T")[0],
-                isVisible: true,
-                isFlagged: false,
-            };
-            setReviews((prev) => [newReview, ...prev]);
+            });
+            if (created) {
+                const newReview: Review = {
+                    id: created.id,
+                    author: created.author_name,
+                    authorAvatar: created.author_avatar || avatarUrl,
+                    rating: created.rating,
+                    title: created.title,
+                    content: created.content,
+                    company: created.company || undefined,
+                    date: new Date(created.created_at).toLocaleDateString(),
+                    isVisible: true,
+                    isFlagged: false,
+                };
+                setReviews((prev) => [newReview, ...prev]);
+            }
         }
 
         setShowNewReview(false);
@@ -152,6 +204,17 @@ export default function AdminReviewsPage() {
     const avgRating = reviews.length > 0
         ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
         : "0";
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center">
+                    <Loader2 className="w-8 h-8 text-blue-400 animate-spin mx-auto mb-3" />
+                    <p className="text-white/40 text-sm">Loading reviews...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
