@@ -133,6 +133,49 @@ export async function deleteUsers(userIds: string[]) {
     return !error;
 }
 
+export async function updateUserProfile(userId: string, updates: Record<string, unknown>) {
+    const { error } = await supabase
+        .from("profiles")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", userId);
+    return !error;
+}
+
+export async function createUser(email: string, password: string, name: string, handle: string, role: string) {
+    // Use Supabase auth signUp — the handle_new_user trigger will create the profile
+    const formattedHandle = handle.startsWith("@") ? handle : `@${handle}`;
+    const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=3b82f6&color=fff`;
+
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                name: name.trim(),
+                handle: formattedHandle,
+                avatar: avatarUrl,
+                role: role || "candidate",
+            },
+        },
+    });
+
+    if (error) {
+        console.error("Error creating user:", error);
+        return { error: error.message };
+    }
+
+    // Wait for trigger to create profile, then update role
+    if (data.user) {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        await supabase
+            .from("profiles")
+            .update({ role, updated_at: new Date().toISOString() })
+            .eq("id", data.user.id);
+    }
+
+    return { user: data.user };
+}
+
 // ========== Listings ==========
 
 export async function fetchAdminListings() {
@@ -248,6 +291,7 @@ export async function createReview(review: {
     title: string;
     content: string;
     company?: string;
+    image_url?: string;
 }) {
     const { data, error } = await supabase
         .from("reviews")
@@ -276,6 +320,85 @@ export async function deleteReview(reviewId: string) {
         .delete()
         .eq("id", reviewId);
     return !error;
+}
+
+// ========== Insights ==========
+
+export async function fetchAdminInsights() {
+    const { data, error } = await supabase
+        .from("insights")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+    if (error) {
+        console.error("Error fetching insights:", error);
+        return [];
+    }
+    return data || [];
+}
+
+export async function createInsight(insight: {
+    title: string;
+    category: string;
+    excerpt?: string;
+    content?: string;
+    image_url?: string;
+    author_name?: string;
+    is_published?: boolean;
+}) {
+    const { data, error } = await supabase
+        .from("insights")
+        .insert([insight])
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Error creating insight:", error);
+        return null;
+    }
+    return data;
+}
+
+export async function updateInsight(insightId: string, updates: Record<string, unknown>) {
+    const { error } = await supabase
+        .from("insights")
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq("id", insightId);
+    return !error;
+}
+
+export async function deleteInsight(insightId: string) {
+    const { error } = await supabase
+        .from("insights")
+        .delete()
+        .eq("id", insightId);
+    return !error;
+}
+
+// ========== Admin Post Creation ==========
+
+export async function createAdminPost(authorId: string, content: string, image?: string) {
+    const { data, error } = await supabase
+        .from("posts")
+        .insert([{
+            author_id: authorId,
+            content,
+            image: image || null,
+            status: "visible",
+            likes_count: 0,
+            comments_count: 0,
+        }])
+        .select(`
+            *,
+            author:profiles!author_id(id, name, handle, avatar)
+        `)
+        .single();
+
+    if (error) {
+        console.error("Error creating post:", error);
+        return null;
+    }
+    return data;
 }
 
 // ========== Helpers ==========

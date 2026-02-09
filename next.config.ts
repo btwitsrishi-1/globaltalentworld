@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
                 hostname: "images.unsplash.com",
                 pathname: "/**",
             },
+            {
+                protocol: "https",
+                hostname: "*.supabase.co",
+                pathname: "/storage/**",
+            },
         ],
     },
     // Transpile Three.js packages for compatibility

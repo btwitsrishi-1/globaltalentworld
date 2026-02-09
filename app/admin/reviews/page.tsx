@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Search,
@@ -18,8 +18,11 @@ import {
     ChevronDown,
     AlertTriangle,
     Loader2,
+    Upload,
+    Image as ImageIcon,
 } from "lucide-react";
 import { fetchAdminReviews, createReview, updateReview, deleteReview as deleteReviewApi } from "@/lib/admin-data";
+import { uploadFile } from "@/lib/storage";
 
 interface Review {
     id: string;
@@ -29,6 +32,7 @@ interface Review {
     title: string;
     content: string;
     company?: string;
+    imageUrl?: string;
     date: string;
     isVisible: boolean;
     isFlagged: boolean;
@@ -50,6 +54,21 @@ export default function AdminReviewsPage() {
     const [formTitle, setFormTitle] = useState("");
     const [formContent, setFormContent] = useState("");
     const [formCompany, setFormCompany] = useState("");
+    const [formImageUrl, setFormImageUrl] = useState("");
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!file.type.startsWith("image/")) return;
+        if (file.size > 5 * 1024 * 1024) { alert("Image must be under 5MB."); return; }
+        setUploading(true);
+        const url = await uploadFile("reviews", file);
+        if (url) setFormImageUrl(url);
+        setUploading(false);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
 
     useEffect(() => {
         async function loadReviews() {
@@ -63,6 +82,7 @@ export default function AdminReviewsPage() {
                     title: r.title,
                     content: r.content,
                     company: r.company || undefined,
+                    imageUrl: r.image_url || undefined,
                     date: new Date(r.created_at).toLocaleDateString(),
                     isVisible: r.is_visible ?? true,
                     isFlagged: r.is_flagged ?? false,
@@ -130,6 +150,7 @@ export default function AdminReviewsPage() {
         setFormTitle("");
         setFormContent("");
         setFormCompany("");
+        setFormImageUrl("");
     };
 
     const openNewReview = () => {
@@ -144,6 +165,7 @@ export default function AdminReviewsPage() {
         setFormTitle(review.title);
         setFormContent(review.content);
         setFormCompany(review.company || "");
+        setFormImageUrl(review.imageUrl || "");
         setEditingReview(review);
         setShowNewReview(true);
     };
@@ -158,12 +180,13 @@ export default function AdminReviewsPage() {
                 title: formTitle,
                 content: formContent,
                 company: formCompany || null,
+                image_url: formImageUrl || null,
             });
             if (success) {
                 setReviews((prev) =>
                     prev.map((r) =>
                         r.id === editingReview.id
-                            ? { ...r, author: formAuthor, rating: formRating, title: formTitle, content: formContent, company: formCompany || undefined }
+                            ? { ...r, author: formAuthor, rating: formRating, title: formTitle, content: formContent, company: formCompany || undefined, imageUrl: formImageUrl || undefined }
                             : r
                     )
                 );
@@ -177,6 +200,7 @@ export default function AdminReviewsPage() {
                 title: formTitle,
                 content: formContent,
                 company: formCompany || undefined,
+                image_url: formImageUrl || undefined,
             });
             if (created) {
                 const newReview: Review = {
@@ -522,6 +546,34 @@ export default function AdminReviewsPage() {
                                         placeholder="Write the review content here..."
                                         className="w-full px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 transition-all resize-none"
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="flex items-center gap-1.5 text-xs font-medium text-white/40 mb-1.5">
+                                        <ImageIcon className="w-3 h-3" /> Image (optional)
+                                    </label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={formImageUrl}
+                                            onChange={(e) => setFormImageUrl(e.target.value)}
+                                            placeholder="Image URL or upload..."
+                                            className="flex-1 px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-blue-500/50 transition-all"
+                                        />
+                                        <button
+                                            onClick={() => fileInputRef.current?.click()}
+                                            disabled={uploading}
+                                            className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-sm text-white/60 hover:text-white hover:border-white/[0.15] transition-all disabled:opacity-40"
+                                        >
+                                            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                                        </button>
+                                    </div>
+                                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                    {formImageUrl && (
+                                        <div className="mt-2 rounded-xl overflow-hidden border border-white/[0.08] max-h-32">
+                                            <img src={formImageUrl} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

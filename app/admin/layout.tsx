@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,8 +17,12 @@ import {
     Shield,
     ChevronRight,
     Star,
+    Database,
+    Wifi,
+    WifiOff,
 } from "lucide-react";
 import { useAdmin } from "@/lib/admin-context";
+import { supabase } from "@/lib/supabase";
 
 interface NavItem {
     label: string;
@@ -36,6 +40,10 @@ const navItems: NavItem[] = [
     { label: "About", href: "/admin/about", icon: Info },
 ];
 
+function formatTime(date: Date): string {
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { isAdmin, adminLogout } = useAdmin();
     const router = useRouter();
@@ -43,9 +51,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
 
+    // Database connection status
+    const [dbStatus, setDbStatus] = useState<"checking" | "connected" | "disconnected">("checking");
+    const [lastFetchTime, setLastFetchTime] = useState<Date | null>(null);
+    const [dbLatency, setDbLatency] = useState<number | null>(null);
+
+    const checkConnection = useCallback(async () => {
+        setDbStatus("checking");
+        const start = performance.now();
+        try {
+            const { error } = await supabase.from("profiles").select("id", { count: "exact", head: true });
+            const latency = Math.round(performance.now() - start);
+            if (error) {
+                setDbStatus("disconnected");
+                setDbLatency(null);
+            } else {
+                setDbStatus("connected");
+                setDbLatency(latency);
+                setLastFetchTime(new Date());
+            }
+        } catch {
+            setDbStatus("disconnected");
+            setDbLatency(null);
+        }
+    }, []);
+
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Check DB connection on mount and every 30s
+    useEffect(() => {
+        if (!mounted) return;
+        checkConnection();
+        const interval = setInterval(checkConnection, 30000);
+        return () => clearInterval(interval);
+    }, [mounted, checkConnection]);
 
     useEffect(() => {
         if (mounted && !isAdmin && pathname !== "/admin/login") {
@@ -118,8 +159,51 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </nav>
 
                 {/* Admin footer */}
-                <div className="p-4 border-t border-white/[0.06]">
-                    <div className="flex items-center gap-3 mb-3 px-3">
+                <div className="p-4 border-t border-white/[0.06] space-y-3">
+                    {/* Database connection status */}
+                    <button
+                        onClick={checkConnection}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/[0.04] transition-all group"
+                        title="Click to refresh connection status"
+                    >
+                        <div className="relative">
+                            <Database className={`w-3.5 h-3.5 ${
+                                dbStatus === "connected" ? "text-emerald-400" :
+                                dbStatus === "disconnected" ? "text-red-400" :
+                                "text-amber-400"
+                            }`} />
+                            <div className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-[#0a0a0f] ${
+                                dbStatus === "connected" ? "bg-emerald-400" :
+                                dbStatus === "disconnected" ? "bg-red-400" :
+                                "bg-amber-400 animate-pulse"
+                            }`} />
+                        </div>
+                        <div className="flex-1 min-w-0 text-left">
+                            <p className={`text-[11px] font-medium ${
+                                dbStatus === "connected" ? "text-emerald-400" :
+                                dbStatus === "disconnected" ? "text-red-400" :
+                                "text-amber-400"
+                            }`}>
+                                {dbStatus === "connected" ? "Supabase Connected" :
+                                 dbStatus === "disconnected" ? "Disconnected" :
+                                 "Checking..."}
+                            </p>
+                            <p className="text-[9px] text-white/25">
+                                {dbStatus === "connected" && dbLatency !== null && (
+                                    <>{dbLatency}ms{lastFetchTime && <> &middot; {formatTime(lastFetchTime)}</>}</>
+                                )}
+                                {dbStatus === "disconnected" && "Click to retry"}
+                                {dbStatus === "checking" && "Pinging database..."}
+                            </p>
+                        </div>
+                        {dbStatus === "connected" ? (
+                            <Wifi className="w-3 h-3 text-emerald-400/40 group-hover:text-emerald-400/70 transition-colors" />
+                        ) : (
+                            <WifiOff className="w-3 h-3 text-red-400/40 group-hover:text-red-400/70 transition-colors" />
+                        )}
+                    </button>
+
+                    <div className="flex items-center gap-3 px-3">
                         <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                             <span className="text-xs font-bold text-emerald-400">A</span>
                         </div>
@@ -231,6 +315,34 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         </div>
 
                         <div className="flex items-center gap-3">
+                            {/* DB status pill in header */}
+                            <button
+                                onClick={checkConnection}
+                                className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                                    dbStatus === "connected"
+                                        ? "bg-emerald-500/[0.06] border-emerald-500/20 hover:bg-emerald-500/[0.12]"
+                                        : dbStatus === "disconnected"
+                                        ? "bg-red-500/[0.06] border-red-500/20 hover:bg-red-500/[0.12]"
+                                        : "bg-amber-500/[0.06] border-amber-500/20"
+                                }`}
+                                title={lastFetchTime ? `Last connected: ${formatTime(lastFetchTime)}` : "Checking connection..."}
+                            >
+                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                    dbStatus === "connected" ? "bg-emerald-400" :
+                                    dbStatus === "disconnected" ? "bg-red-400" :
+                                    "bg-amber-400 animate-pulse"
+                                }`} />
+                                <span className={`text-xs font-medium ${
+                                    dbStatus === "connected" ? "text-emerald-400" :
+                                    dbStatus === "disconnected" ? "text-red-400" :
+                                    "text-amber-400"
+                                }`}>
+                                    {dbStatus === "connected" ? `DB` : dbStatus === "disconnected" ? "Offline" : "..."}
+                                </span>
+                                {dbStatus === "connected" && dbLatency !== null && (
+                                    <span className="text-[10px] text-emerald-400/50">{dbLatency}ms</span>
+                                )}
+                            </button>
                             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/[0.08] border border-emerald-500/20">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                                 <span className="text-xs text-emerald-400 font-medium">Admin</span>

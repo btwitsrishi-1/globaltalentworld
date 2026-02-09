@@ -174,6 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 email,
                 password,
                 options: {
+                    emailRedirectTo: `${window.location.origin}/login`,
                     data: {
                         name: name.trim(),
                         handle: formattedHandle,
@@ -187,6 +188,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             if (error) {
                 if (error.message.includes("already registered")) {
                     return { error: "An account with this email already exists. Please log in instead." };
+                }
+                if (error.message.toLowerCase().includes("rate limit") || error.message.toLowerCase().includes("email rate")) {
+                    return { error: "Too many signup attempts. Please wait a few minutes and try again." };
                 }
                 return { error: error.message };
             }
