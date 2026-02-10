@@ -262,7 +262,7 @@ export default function AdminListingsPage() {
                     <Briefcase className="w-10 h-10 text-white/10 mx-auto mb-4" />
                     <h3 className="text-lg font-semibold text-white/60 mb-2">No Listings Yet</h3>
                     <p className="text-white/30 text-sm max-w-md mx-auto">
-                        Job listings will appear here when employers post them through the platform. You&apos;ll be able to see who created each listing, view all applicants, and access their resumes.
+                        Job listings will appear here when recruiters post them through the platform. You&apos;ll be able to see who created each listing, view all applicants, and access their resumes.
                     </p>
                 </div>
             )}

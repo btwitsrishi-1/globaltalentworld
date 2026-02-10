@@ -129,7 +129,7 @@ export default function CreateJobPage() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!validateForm()) return;
@@ -147,7 +147,7 @@ export default function CreateJobPage() {
             .map((b) => b.trim())
             .filter((b) => b.length > 0);
 
-        createJob({
+        await createJob({
             role: formData.role.trim(),
             company: formData.company.trim(),
             location: formData.location.trim(),

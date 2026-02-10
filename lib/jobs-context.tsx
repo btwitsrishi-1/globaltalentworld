@@ -19,8 +19,8 @@ interface JobsContextType {
     shortlistApplication: (applicationId: string) => void;
     rejectApplication: (applicationId: string) => void;
     addNoteToApplication: (applicationId: string, note: string, authorId: string, authorName: string) => void;
-    createJob: (job: Omit<Job, 'id' | 'postedDate'>) => void;
-    deleteJob: (jobId: string) => void;
+    createJob: (job: Omit<Job, 'id' | 'postedDate'>) => Promise<void> | void;
+    deleteJob: (jobId: string) => Promise<void> | void;
     getJobsByEmployer: (employerId: string) => Job[];
     requestListingAccess: (request: Omit<ListingAccessRequest, 'id' | 'requestedAt'>) => void;
     getAccessRequests: (ownerId: string) => ListingAccessRequest[];
@@ -248,17 +248,60 @@ export const JobsProvider = ({ children }: { children: React.ReactNode }) => {
         );
     };
 
-    const createJob = (job: Omit<Job, 'id' | 'postedDate'>) => {
-        const newJob: Job = {
-            ...job,
-            id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-            postedDate: new Date(),
-        };
-        setAllJobs((prev) => [newJob, ...prev]);
+    const createJob = async (job: Omit<Job, 'id' | 'postedDate'>) => {
+        try {
+            const { data, error } = await supabase
+                .from("jobs")
+                .insert([{
+                    role: job.role,
+                    company: job.company,
+                    location: job.location,
+                    salary: job.salary,
+                    type: job.type,
+                    description: job.description || null,
+                    requirements: job.requirements || [],
+                    benefits: job.benefits || [],
+                    employer_id: job.employerId || null,
+                    posted_date: new Date().toISOString(),
+                    is_active: true,
+                }])
+                .select()
+                .single();
+
+            if (error) throw error;
+
+            const newJob: Job = {
+                id: data.id,
+                role: data.role,
+                company: data.company,
+                location: data.location,
+                salary: data.salary,
+                type: data.type as Job["type"],
+                description: data.description || undefined,
+                requirements: data.requirements || [],
+                benefits: data.benefits || [],
+                employerId: data.employer_id || "",
+                postedDate: new Date(data.posted_date),
+            };
+            setAllJobs((prev) => [newJob, ...prev]);
+        } catch {
+            // Fallback: create locally if Supabase fails
+            const newJob: Job = {
+                ...job,
+                id: `job-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+                postedDate: new Date(),
+            };
+            setAllJobs((prev) => [newJob, ...prev]);
+        }
     };
 
-    const deleteJob = (jobId: string) => {
+    const deleteJob = async (jobId: string) => {
         setAllJobs((prev) => prev.filter((job) => job.id !== jobId));
+        try {
+            await supabase.from("jobs").delete().eq("id", jobId);
+        } catch {
+            console.warn("Could not delete job from Supabase");
+        }
     };
 
     const getJobsByEmployer = useCallback((employerId: string) => {

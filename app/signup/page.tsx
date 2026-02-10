@@ -9,11 +9,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2, User, AtSign, Mail, Lock, Briefcase, Shield } from "lucide-react";
 
-type RoleOption = "candidate" | "employer" | "recruiter";
+type RoleOption = "candidate" | "employee" | "recruiter";
 
 const ROLE_OPTIONS: { value: RoleOption; label: string; icon: typeof User; description: string }[] = [
     { value: "candidate", label: "Candidate", icon: User, description: "Find your dream role" },
-    { value: "employer", label: "Employer", icon: Briefcase, description: "Hire top talent" },
+    { value: "employee", label: "Employee", icon: Briefcase, description: "Part of the GTW team" },
     { value: "recruiter", label: "Recruiter", icon: Shield, description: "Connect talent & companies" },
 ];
 
@@ -83,7 +83,9 @@ export default function SignUpPage() {
 
         try {
             const formattedHandle = handle.startsWith("@") ? handle : `@${handle}`;
-            const result = await signup(name.trim(), email.trim(), formattedHandle, password, role);
+            // Map "employee" display role to "employer" for DB storage
+            const dbRole = role === "employee" ? "employer" : role;
+            const result = await signup(name.trim(), email.trim(), formattedHandle, password, dbRole);
 
             if (result.error) {
                 setErrors({ general: result.error });

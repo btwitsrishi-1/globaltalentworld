@@ -56,8 +56,8 @@ export default function ActivesPage() {
     const handleSendMessage = useCallback(() => {
         if (!selectedApplicationId || !newMessage.trim()) return;
 
-        const authorId = user?.id || user?.email || "employer";
-        const authorName = user?.name || "Employer";
+        const authorId = user?.id || user?.email || "employee";
+        const authorName = user?.name || "Employee";
 
         addNoteToApplication(
             selectedApplicationId,
@@ -244,7 +244,7 @@ export default function ActivesPage() {
                                                     <div
                                                         key={note.id}
                                                         className={`rounded-xl p-4 max-w-[85%] ${
-                                                            note.authorId === (user?.id || user?.email || "employer")
+                                                            note.authorId === (user?.id || user?.email || "employee")
                                                                 ? "bg-emerald-600/20 border border-emerald-500/20 ml-auto"
                                                                 : "bg-white/5 border border-white/10"
                                                         }`}

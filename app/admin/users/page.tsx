@@ -43,7 +43,7 @@ interface AdminUser {
     email: string;
     handle: string;
     avatar: string;
-    role: "candidate" | "employer" | "recruiter" | "admin";
+    role: "candidate" | "employee" | "recruiter" | "admin";
     recruiterStatus?: "pending" | "approved" | "rejected";
     recruiterCompany?: string;
     location: string;
@@ -53,9 +53,16 @@ interface AdminUser {
 
 const roleColors: Record<string, string> = {
     candidate: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    employer: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    employee: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     recruiter: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     admin: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+};
+
+const roleLabels: Record<string, string> = {
+    candidate: "Candidate",
+    employee: "Employee",
+    recruiter: "Recruiter",
+    admin: "Admin",
 };
 
 const statusColors: Record<string, string> = {
@@ -102,7 +109,7 @@ export default function AdminUsersPage() {
                     email: u.email || "",
                     handle: u.handle || "",
                     avatar: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || 'U')}&background=3b82f6&color=fff`,
-                    role: u.recruiter_status ? "recruiter" : u.role === "employer" ? "employer" : u.role || "candidate",
+                    role: u.recruiter_status ? "recruiter" : u.role === "employer" ? "employee" : u.role === "employee" ? "employee" : u.role || "candidate",
                     recruiterStatus: u.recruiter_status || undefined,
                     recruiterCompany: u.recruiter_company || undefined,
                     location: u.location || "Not specified",
@@ -211,12 +218,29 @@ export default function AdminUsersPage() {
     const handleSaveEdit = async () => {
         if (!editingUser || !editName.trim() || !editEmail.trim() || !editHandle.trim()) return;
         setEditSaving(true);
-        const success = await updateUserProfile(editingUser.id, {
+
+        // Map "employee" display role back to "employer" for DB storage
+        const dbRole = editRole === "employee" ? "employer" : editRole;
+
+        // Build update payload
+        const updatePayload: Record<string, unknown> = {
             name: editName.trim(),
             email: editEmail.trim(),
             handle: editHandle.startsWith("@") ? editHandle.trim() : `@${editHandle.trim()}`,
-            role: editRole,
-        });
+            role: dbRole,
+        };
+
+        // When changing to recruiter, set recruiter_status
+        if (editRole === "recruiter" && editingUser.role !== "recruiter") {
+            updatePayload.recruiter_status = "pending";
+        }
+        // When changing away from recruiter, clear recruiter fields
+        if (editRole !== "recruiter" && editingUser.role === "recruiter") {
+            updatePayload.recruiter_status = null;
+            updatePayload.recruiter_company = null;
+        }
+
+        const success = await updateUserProfile(editingUser.id, updatePayload);
         if (success) {
             setUsers((prev) =>
                 prev.map((u) =>
@@ -227,6 +251,7 @@ export default function AdminUsersPage() {
                             email: editEmail.trim(),
                             handle: editHandle.startsWith("@") ? editHandle.trim() : `@${editHandle.trim()}`,
                             role: editRole as AdminUser["role"],
+                            recruiterStatus: editRole === "recruiter" && editingUser.role !== "recruiter" ? "pending" as const : editRole !== "recruiter" ? undefined : u.recruiterStatus,
                         }
                         : u
                 )
@@ -256,12 +281,15 @@ export default function AdminUsersPage() {
         setCreateSaving(true);
         setCreateError("");
 
+        // Map "employee" display role back to "employer" for DB storage
+        const dbRole = createRole === "employee" ? "employer" : createRole;
+
         const result = await createUser(
             createEmail.trim(),
             createPassword,
             createName.trim(),
             createHandle.trim(),
-            createRole
+            dbRole
         );
 
         if (result.error) {
@@ -370,7 +398,7 @@ export default function AdminUsersPage() {
                                             exit={{ opacity: 0, y: -5 }}
                                             className="absolute top-full mt-2 right-0 w-44 bg-[#0a0a0f] border border-white/[0.08] rounded-xl p-1 shadow-2xl z-20"
                                         >
-                                            {["all", "candidate", "employer", "recruiter"].map((role) => (
+                                            {["all", "candidate", "employee", "recruiter"].map((role) => (
                                                 <button
                                                     key={role}
                                                     onClick={() => { setRoleFilter(role); setShowFilterDropdown(false); }}
@@ -378,7 +406,7 @@ export default function AdminUsersPage() {
                                                         roleFilter === role ? "bg-blue-500/10 text-blue-400" : "text-white/60 hover:bg-white/[0.04] hover:text-white"
                                                     }`}
                                                 >
-                                                    {role === "all" ? "All Roles" : role.charAt(0).toUpperCase() + role.slice(1)}
+                                                    {role === "all" ? "All Roles" : roleLabels[role] || role}
                                                 </button>
                                             ))}
                                         </motion.div>
@@ -419,7 +447,7 @@ export default function AdminUsersPage() {
                     </div>
 
                     {/* Users table */}
-                    <div className="card-embossed overflow-hidden">
+                    <div className="card-embossed overflow-visible">
                         <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 border-b border-white/[0.06] text-xs font-medium text-white/30 uppercase tracking-wider">
                             <div className="col-span-1 flex items-center">
                                 <button onClick={toggleSelectAll} className="text-white/30 hover:text-white transition-colors">
@@ -476,7 +504,7 @@ export default function AdminUsersPage() {
                                     <div className="col-span-2 flex items-center">
                                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium border ${roleColors[user.role]}`}>
                                             {user.role === "recruiter" && <Shield className="w-3 h-3" />}
-                                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                            {roleLabels[user.role] || user.role}
                                         </span>
                                     </div>
 
@@ -511,7 +539,9 @@ export default function AdminUsersPage() {
                                                     initial={{ opacity: 0, scale: 0.95 }}
                                                     animate={{ opacity: 1, scale: 1 }}
                                                     exit={{ opacity: 0, scale: 0.95 }}
-                                                    className="absolute top-full right-0 mt-1 w-48 bg-[#0f0f15] border border-white/[0.08] rounded-xl p-1 shadow-2xl z-20"
+                                                    className={`absolute right-0 w-48 bg-[#0f0f15] border border-white/[0.08] rounded-xl p-1 shadow-2xl z-20 ${
+                                                        index >= filteredUsers.length - 2 ? "bottom-full mb-1" : "top-full mt-1"
+                                                    }`}
                                                 >
                                                     <button onClick={() => openEditUser(user)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-blue-400 hover:bg-blue-500/[0.08] transition-colors">
                                                         <Pencil className="w-4 h-4" /> Edit User
@@ -525,6 +555,16 @@ export default function AdminUsersPage() {
                                                                 <UserX className="w-4 h-4" /> Reject Recruiter
                                                             </button>
                                                         </>
+                                                    )}
+                                                    {user.role === "recruiter" && user.recruiterStatus === "approved" && (
+                                                        <button onClick={() => handleRejectRecruiter(user.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/[0.08] transition-colors">
+                                                            <UserX className="w-4 h-4" /> Revoke Recruiter
+                                                        </button>
+                                                    )}
+                                                    {user.role === "recruiter" && user.recruiterStatus === "rejected" && (
+                                                        <button onClick={() => handleApproveRecruiter(user.id)} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-emerald-400 hover:bg-emerald-500/[0.08] transition-colors">
+                                                            <UserCheck className="w-4 h-4" /> Approve Recruiter
+                                                        </button>
                                                     )}
                                                     <button
                                                         onClick={() => handleToggleBan(user.id)}
@@ -590,17 +630,23 @@ export default function AdminUsersPage() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-white/40 mb-1.5">Role</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {["candidate", "employer", "recruiter"].map((role) => (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        {["candidate", "employee", "recruiter", "admin"].map((role) => (
                                             <button
                                                 key={role}
                                                 onClick={() => setEditRole(role)}
                                                 className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${editRole === role ? "bg-blue-500/10 text-blue-400 border-blue-500/30" : "bg-white/[0.02] text-white/40 border-white/[0.08] hover:border-white/[0.15]"}`}
                                             >
-                                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                                                {roleLabels[role] || role}
                                             </button>
                                         ))}
                                     </div>
+                                    {editRole === "recruiter" && editingUser?.role !== "recruiter" && (
+                                        <p className="text-xs text-amber-400/80 mt-2 flex items-center gap-1.5">
+                                            <Shield className="w-3 h-3" />
+                                            User will be set as pending recruiter. Approve from the actions menu after saving.
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -664,14 +710,14 @@ export default function AdminUsersPage() {
                                 </div>
                                 <div>
                                     <label className="block text-xs font-medium text-white/40 mb-1.5">Role</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {["candidate", "employer", "recruiter"].map((role) => (
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                        {["candidate", "employee", "recruiter", "admin"].map((role) => (
                                             <button
                                                 key={role}
                                                 onClick={() => setCreateRole(role)}
                                                 className={`px-3 py-2.5 rounded-xl text-sm font-medium border transition-all ${createRole === role ? "bg-blue-500/10 text-blue-400 border-blue-500/30" : "bg-white/[0.02] text-white/40 border-white/[0.08] hover:border-white/[0.15]"}`}
                                             >
-                                                {role.charAt(0).toUpperCase() + role.slice(1)}
+                                                {roleLabels[role] || role}
                                             </button>
                                         ))}
                                     </div>

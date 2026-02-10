@@ -66,8 +66,8 @@ export default function EmployerDashboard() {
     const handleAddNote = () => {
         if (!selectedApplication || !newNote.trim()) return;
 
-        const authorId = user?.id || user?.email || "employer";
-        const authorName = user?.name || "Employer";
+        const authorId = user?.id || user?.email || "employee";
+        const authorName = user?.name || "Employee";
 
         addNoteToApplication(
             selectedApplication.id,
@@ -107,7 +107,7 @@ export default function EmployerDashboard() {
                     {/* Header */}
                     <div>
                         <h1 className="font-sans font-light text-4xl sm:text-5xl text-white mb-2">
-                            Employer Dashboard
+                            Employee Dashboard
                         </h1>
                         <p className="text-slate-400">
                             Manage applications and find your next great hire

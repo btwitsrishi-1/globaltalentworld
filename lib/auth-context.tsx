@@ -14,7 +14,7 @@ interface User {
     location?: string;
     website?: string;
     cv?: string;
-    role?: "candidate" | "employer" | "both" | "recruiter" | "admin";
+    role?: "candidate" | "employer" | "employee" | "both" | "recruiter" | "admin";
     recruiterStatus?: "pending" | "approved" | "rejected";
     recruiterCompany?: string;
 }

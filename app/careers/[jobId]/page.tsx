@@ -353,7 +353,7 @@ export default function JobDetailsPage() {
                                                 <AlertCircle className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
                                                 <p>
                                                     Your profile information and CV will be shared
-                                                    with the employer.
+                                                    with the recruiter.
                                                 </p>
                                             </div>
                                         </div>

@@ -53,11 +53,12 @@ export async function fetchRecentActivity(limit = 8) {
     const activities: ActivityItem[] = [];
 
     (recentUsers || []).forEach((u) => {
-        const isRecruiter = u.role === "employer";
+        const isRecruiter = u.role === "recruiter";
+        const displayRole = u.role === "employer" ? "employee" : u.role || "candidate";
         activities.push({
             id: u.id,
             action: isRecruiter ? "Recruiter registered" : "New user registered",
-            detail: `${u.name} joined as ${u.role || "candidate"}`,
+            detail: `${u.name} joined as ${displayRole}`,
             time: formatTimeAgo(u.created_at),
             type: isRecruiter ? "recruiter" : "user",
             created_at: u.created_at,
