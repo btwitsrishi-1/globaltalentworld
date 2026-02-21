@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useJobs } from "@/lib/jobs-context";
 import { formatDate, toISODateString } from "@/lib/constants";
 import { motion, AnimatePresence } from "framer-motion";
+import { FallingPattern } from "@/components/ui/falling-pattern";
 import {
     Briefcase,
     Plus,
@@ -89,7 +90,15 @@ export default function RecruiterDashboard() {
     ];
 
     return (
-        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col relative">
+            <FallingPattern
+                className="fixed inset-0 z-0 opacity-20 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
 

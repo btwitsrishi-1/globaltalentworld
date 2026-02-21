@@ -158,6 +158,8 @@ export const Navbar = () => {
                         <MagneticLink href="/careers" isActive={pathname === "/careers"}>Careers</MagneticLink>
                         <MagneticLink href="/community" isActive={pathname === "/community"}>Community</MagneticLink>
                         <MagneticLink href="/insights" isActive={pathname === "/insights"}>Insights</MagneticLink>
+                        {/* Shop link — disabled until Shopify credentials are configured */}
+                        {/* <MagneticLink href="/shop" isActive={pathname === "/shop"}>Shop</MagneticLink> */}
                         {isRecruiter && (
                             <MagneticLink href="/recruiter" isActive={pathname?.startsWith("/recruiter")}>Recruiter</MagneticLink>
                         )}
@@ -252,6 +254,8 @@ export const Navbar = () => {
                                     { href: "/careers", label: "Careers" },
                                     { href: "/community", label: "Community" },
                                     { href: "/insights", label: "Insights" },
+                                    // Shop disabled until Shopify credentials are configured
+                                    // { href: "/shop", label: "Shop" },
                                     ...(isRecruiter ? [{ href: "/recruiter", label: "Recruiter" }] : []),
                                 ].map((link, i) => (
                                     <motion.div

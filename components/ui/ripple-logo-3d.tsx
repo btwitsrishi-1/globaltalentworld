@@ -6,6 +6,8 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 
 const rippleVertexShader = `
+  precision mediump float;
+
   uniform float uTime;
   uniform vec2 uMouse;
   uniform float uRippleStrength;
@@ -17,9 +19,9 @@ const rippleVertexShader = `
 
   void main() {
     vNormal = normalize(normalMatrix * normal);
-    vPosition = position;
+    vPosition = (modelMatrix * vec4(position, 1.0)).xyz;
 
-    vec3 worldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+    vec3 worldPos = vPosition;
     float dist = length(worldPos.xy - uMouse);
 
     float ripple = sin(dist * uRippleFrequency - uTime * 3.0) * exp(-dist * 0.8);
@@ -36,9 +38,12 @@ const rippleVertexShader = `
 `
 
 const rippleFragmentShader = `
+  precision mediump float;
+
   uniform float uTime;
   uniform vec3 uColor;
   uniform vec3 uGlowColor;
+  uniform vec3 uCameraPos;
 
   varying vec3 vNormal;
   varying vec3 vPosition;
@@ -48,7 +53,7 @@ const rippleFragmentShader = `
     vec3 lightDir = normalize(vec3(0.5, 1.0, 0.8));
     float diffuse = max(dot(vNormal, lightDir), 0.0);
 
-    vec3 viewDir = normalize(cameraPosition - vPosition);
+    vec3 viewDir = normalize(uCameraPos - vPosition);
     float fresnel = pow(1.0 - max(dot(vNormal, viewDir), 0.0), 3.0);
 
     float glowIntensity = abs(vDisplacement) * 15.0;
@@ -66,7 +71,10 @@ const rippleFragmentShader = `
   }
 `
 
+// Wire vertex shader: WireframeGeometry has no normals, so we skip normal-based displacement
 const wireVertexShader = `
+  precision mediump float;
+
   uniform float uTime;
   uniform vec2 uMouse;
   uniform float uRippleStrength;
@@ -82,13 +90,14 @@ const wireVertexShader = `
     float idle = sin(position.x * 2.0 + uTime * 0.5) * cos(position.y * 2.0 + uTime * 0.3) * 0.02;
 
     vDisplacement = displacement + idle;
-    vec3 newPosition = position + normal * (displacement + idle);
-
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+    // No normal attribute on WireframeGeometry — skip normal-based displacement
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
 
 const wireFragmentShader = `
+  precision mediump float;
+
   uniform vec3 uWireColor;
   varying float vDisplacement;
 
@@ -120,6 +129,7 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
     uRippleFrequency: { value: 8.0 },
     uColor: { value: new THREE.Color(0x3b82f6) },
     uGlowColor: { value: new THREE.Color(0x10b981) },
+    uCameraPos: { value: new THREE.Vector3(0, 0, 5) },
   }), [])
 
   const wireUniforms = useMemo(() => ({
@@ -196,6 +206,7 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = time
       materialRef.current.uniforms.uMouse.value.copy(mouseVec)
+      materialRef.current.uniforms.uCameraPos.value.copy(state.camera.position)
     }
     if (wireMaterialRef.current) {
       wireMaterialRef.current.uniforms.uTime.value = time

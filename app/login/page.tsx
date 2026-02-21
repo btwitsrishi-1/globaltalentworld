@@ -8,6 +8,7 @@ import { CustomCursor } from "@/components/ui/custom-cursor";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2, Mail, Lock } from "lucide-react";
+import { FallingPattern } from "@/components/ui/falling-pattern";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
@@ -64,6 +65,14 @@ export default function LoginPage() {
 
     return (
         <main className="min-h-screen bg-[#060608] flex items-center justify-center relative overflow-hidden">
+            <FallingPattern
+                className="fixed inset-0 z-0 opacity-20 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
 

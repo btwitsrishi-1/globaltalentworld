@@ -13,8 +13,12 @@ import { useAuth } from "@/lib/auth-context";
 import { motion, AnimatePresence } from "framer-motion";
 import { Users, MessageSquare } from "lucide-react";
 import Link from "next/link";
+import { FallingPattern } from "@/components/ui/falling-pattern";
 
-const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
+const WebGLShader = dynamic(
+    () => import('@/components/ui/web-gl-shader').then(mod => ({ default: mod.WebGLShader })),
+    { ssr: false }
+);
 
 const INITIAL_POSTS = [
     {
@@ -133,10 +137,23 @@ export default function CommunityPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#060608] text-slate-200 flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-slate-200 flex flex-col relative">
+            {/* WebGL shader — deepest layer */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-40">
+                <WebGLShader className="w-full h-full" />
+            </div>
+
+            {/* Falling pattern sits above shader, frames the edges */}
+            <FallingPattern
+                className="fixed inset-0 z-[1] opacity-15 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_30%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
-            <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
             <div className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 pt-32 pb-20 flex gap-8 relative z-10 w-full">
                 <Sidebar />
                 <div className="flex-1 max-w-2xl mx-auto space-y-6">

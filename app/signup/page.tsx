@@ -8,6 +8,13 @@ import { CustomCursor } from "@/components/ui/custom-cursor";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { AlertCircle, Loader2, User, AtSign, Mail, Lock, Briefcase, Shield } from "lucide-react";
+import { FallingPattern } from "@/components/ui/falling-pattern";
+import dynamic from "next/dynamic";
+
+const DigitalPetalsShader = dynamic(
+    () => import('@/components/ui/digital-petals-shader'),
+    { ssr: false }
+);
 
 type RoleOption = "candidate" | "employee" | "recruiter";
 
@@ -123,6 +130,19 @@ export default function SignUpPage() {
 
     return (
         <main className="min-h-screen bg-[#060608] flex items-center justify-center relative overflow-hidden">
+            {/* Digital petals — deepest layer */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-50">
+                <DigitalPetalsShader />
+            </div>
+
+            <FallingPattern
+                className="fixed inset-0 z-[1] opacity-15 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
 

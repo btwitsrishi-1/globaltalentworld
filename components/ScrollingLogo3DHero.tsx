@@ -16,6 +16,16 @@ const FloatingElements = dynamic(
   { ssr: false }
 )
 
+const ShaderAnimation = dynamic(
+  () => import('@/components/ui/shader-lines').then(mod => ({ default: mod.ShaderAnimation })),
+  { ssr: false }
+)
+
+const LightUpShader = dynamic(
+  () => import('@/components/ui/light-up-shader').then(mod => ({ default: mod.LightUpShader })),
+  { ssr: false }
+)
+
 function HeroFallback() {
   return (
     <div className="absolute inset-0 flex items-center justify-center">
@@ -74,9 +84,14 @@ export function ScrollingLogo3DHero() {
       ref={sectionRef}
       className="relative min-h-[110vh] w-full flex items-center justify-center overflow-hidden"
     >
-      {/* Cinematic background with scroll zoom */}
+      {/* Shader lines — deepest background layer */}
+      <div className="absolute inset-0 z-0 opacity-30">
+        <ShaderAnimation />
+      </div>
+
+      {/* Cinematic background overlay with scroll zoom */}
       <motion.div
-        className="absolute inset-0 bg-[#060608]"
+        className="absolute inset-0 bg-[#060608]/40"
         style={{ scale: bgScale }}
       />
 
@@ -117,6 +132,13 @@ export function ScrollingLogo3DHero() {
       <Suspense fallback={null}>
         <FloatingElements className="absolute inset-0 z-0 opacity-50" />
       </Suspense>
+
+      {/* Light-up starfield — directly behind the 3D logo */}
+      <div className="absolute inset-0 z-[5] pointer-events-none">
+        <Suspense fallback={null}>
+          <LightUpShader className="w-full h-full" />
+        </Suspense>
+      </div>
 
       {/* 3D Ripple Logo — center */}
       <div className="absolute inset-0 z-10">

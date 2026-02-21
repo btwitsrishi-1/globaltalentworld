@@ -7,6 +7,7 @@ import { Footer } from "@/components/layout/footer";
 import { InsightCard } from "@/components/insights/insight-card";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { BookOpen, CheckCircle, Loader2 } from "lucide-react";
+import { FallingPattern } from "@/components/ui/falling-pattern";
 import { supabase } from "@/lib/supabase";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -105,7 +106,15 @@ export default function InsightsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col relative">
+            <FallingPattern
+                className="fixed inset-0 z-0 opacity-20 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
             <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />
