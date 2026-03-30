@@ -20,6 +20,12 @@ import {
     AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+
+const WebGLShader = dynamic(
+    () => import("@/components/ui/web-gl-shader").then((mod) => ({ default: mod.WebGLShader })),
+    { ssr: false }
+);
 
 export default function JobDetailsPage() {
     const params = useParams();
@@ -109,11 +115,16 @@ export default function JobDetailsPage() {
     };
 
     return (
-        <main className="min-h-screen bg-[#060608] text-white flex flex-col">
+        <main className="min-h-screen bg-[#060608] text-white flex flex-col relative">
+            {/* WebGL shader background */}
+            <div className="fixed inset-0 z-0 pointer-events-none opacity-25">
+                <WebGLShader className="w-full h-full" />
+            </div>
+
             <CustomCursor />
             <Navbar />
 
-            <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-32 pb-20 w-full">
+            <div className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 pt-32 pb-20 w-full relative z-10">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

@@ -15,6 +15,7 @@ const features = [
         gradient: "from-blue-500/20 to-cyan-500/20",
         iconColor: "text-blue-400",
         iconBg: "bg-blue-500/[0.08] border-blue-500/[0.1] group-hover:bg-blue-500/[0.15] group-hover:border-blue-500/[0.25]",
+        hero: true,
     },
     {
         icon: Users,
@@ -48,7 +49,7 @@ const features = [
     },
 ];
 
-function FeatureCard({ feature, index }: { feature: typeof features[number]; index: number }) {
+function FeatureCard({ feature, index, isHero }: { feature: typeof features[number]; index: number; isHero?: boolean }) {
     const ref = useRef<HTMLDivElement>(null);
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
@@ -79,27 +80,29 @@ function FeatureCard({ feature, index }: { feature: typeof features[number]; ind
             style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
-            className="group relative bg-[#060608] p-8 md:p-10 transition-all duration-500 cursor-default"
+            className={`group relative bg-[#060608] transition-all duration-500 cursor-default ${
+                isHero ? "p-10 md:p-14" : "p-8 md:p-10"
+            }`}
         >
             {/* Hover gradient overlay */}
             <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-700`} />
 
             {/* Content */}
             <div className="relative z-10">
-                <div className="flex items-start justify-between mb-8">
-                    <div className={`w-12 h-12 rounded-xl ${feature.iconBg} border flex items-center justify-center transition-all duration-500`}>
-                        <feature.icon className={`w-5 h-5 ${feature.iconColor}`} />
+                <div className={`flex items-start justify-between ${isHero ? "mb-10" : "mb-8"}`}>
+                    <div className={`${isHero ? "w-14 h-14 rounded-2xl" : "w-12 h-12 rounded-xl"} ${feature.iconBg} border flex items-center justify-center transition-all duration-500`}>
+                        <feature.icon className={`${isHero ? "w-6 h-6" : "w-5 h-5"} ${feature.iconColor}`} />
                     </div>
                     <div className="text-right">
-                        <div className="text-3xl font-bold text-white/90 tabular-nums group-hover:text-white transition-colors duration-300">{feature.stat}</div>
-                        <div className="text-[10px] text-white/25 uppercase tracking-[0.15em] group-hover:text-white/40 transition-colors duration-300">{feature.statLabel}</div>
+                        <div className={`${isHero ? "text-5xl md:text-6xl" : "text-3xl"} font-display font-bold text-white/90 tabular-nums group-hover:text-white transition-colors duration-300`}>{feature.stat}</div>
+                        <div className="text-[10px] text-white/35 uppercase tracking-[0.15em] group-hover:text-white/50 transition-colors duration-300">{feature.statLabel}</div>
                     </div>
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-3 tracking-tight group-hover:text-white transition-colors">{feature.title}</h3>
-                <p className="text-white/30 leading-relaxed text-sm group-hover:text-white/45 transition-colors duration-500">{feature.description}</p>
+                <h3 className={`${isHero ? "text-2xl md:text-3xl mb-4" : "text-lg mb-3"} font-semibold text-white tracking-tight group-hover:text-white transition-colors`}>{feature.title}</h3>
+                <p className={`text-white/40 leading-relaxed group-hover:text-white/55 transition-colors duration-500 ${isHero ? "text-base max-w-md" : "text-sm"}`}>{feature.description}</p>
 
                 {/* Subtle arrow on hover */}
-                <div className="mt-6 flex items-center gap-1.5 text-white/0 group-hover:text-white/30 transition-all duration-500">
+                <div className={`${isHero ? "mt-8" : "mt-6"} flex items-center gap-1.5 text-white/0 group-hover:text-white/30 transition-all duration-500`}>
                     <span className="text-xs font-medium">Learn more</span>
                     <ArrowRight className="w-3 h-3 -translate-x-2 group-hover:translate-x-0 transition-transform duration-500" />
                 </div>
@@ -111,6 +114,9 @@ function FeatureCard({ feature, index }: { feature: typeof features[number]; ind
 export const Features = () => {
     const sectionRef = useRef<HTMLDivElement>(null);
     const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
+
+    const heroFeature = features[0];
+    const smallFeatures = features.slice(1);
 
     return (
         <section ref={sectionRef} className="py-32 md:py-44 px-6 bg-[#060608] relative overflow-hidden">
@@ -134,20 +140,25 @@ export const Features = () => {
                     >
                         Why GTW
                     </motion.p>
-                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
+                    <h2 className="text-4xl md:text-5xl lg:text-6xl font-display tracking-tight text-white mb-6 leading-[1.1]">
                         Built for the
                         <br />
                         <span className="text-gradient">modern workforce</span>
                     </h2>
-                    <p className="text-white/30 text-lg md:text-xl max-w-lg font-light leading-relaxed">
+                    <p className="text-white/45 text-lg md:text-xl max-w-lg font-light leading-relaxed">
                         Reimagining how talent and opportunity connect in the digital age.
                     </p>
                 </motion.div>
 
-                {/* Bento grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/[0.04] rounded-2xl overflow-hidden shadow-border">
-                    {features.map((feature, index) => (
-                        <FeatureCard key={feature.title} feature={feature} index={index} />
+                {/* Asymmetric bento grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-white/[0.04] rounded-2xl overflow-hidden shadow-border sibling-fade">
+                    {/* Hero card — spans 2 columns */}
+                    <div className="md:col-span-2 md:row-span-2">
+                        <FeatureCard feature={heroFeature} index={0} isHero />
+                    </div>
+                    {/* 3 smaller cards */}
+                    {smallFeatures.map((feature, index) => (
+                        <FeatureCard key={feature.title} feature={feature} index={index + 1} />
                     ))}
                 </div>
 

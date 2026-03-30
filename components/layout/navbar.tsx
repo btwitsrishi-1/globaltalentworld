@@ -44,8 +44,8 @@ const MagneticLink = ({ href, children, isActive }: { href: string; children: Re
                 ref={ref}
                 href={href}
                 className={cn(
-                    "relative px-4 py-2 text-[13px] font-medium tracking-wide uppercase transition-colors",
-                    isActive ? "text-white" : "text-white/50 hover:text-white"
+                    "relative px-3.5 py-2 text-[13px] font-medium tracking-wide transition-colors duration-300",
+                    isActive ? "text-white" : "text-white/45 hover:text-white"
                 )}
                 onMouseMove={handleMouseMove}
                 onMouseLeave={() => { x.set(0); y.set(0); }}
@@ -117,30 +117,42 @@ export const Navbar = () => {
     return (
         <>
             {/* Floating pill navbar */}
-            <header
+            <motion.header
                 className={cn(
-                    "fixed top-5 left-1/2 -translate-x-1/2 z-50 rounded-full w-[calc(100%-2rem)] md:w-auto md:max-w-4xl",
+                    "fixed left-1/2 z-50 rounded-full w-[calc(100%-2rem)] md:w-auto",
                     "transition-[background,border,box-shadow,backdrop-filter] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
                     scrolled
-                        ? "bg-white/[0.04] backdrop-blur-3xl border border-white/[0.06]"
-                        : "bg-white/[0.02] backdrop-blur-xl border border-white/[0.04]"
+                        ? "bg-[#0a0a0f]/80 backdrop-blur-2xl border border-white/[0.08]"
+                        : "bg-white/[0.03] backdrop-blur-xl border border-white/[0.05]"
                 )}
-                style={scrolled ? {
-                    boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.05)',
-                } : undefined}
+                animate={{
+                    top: scrolled ? 12 : 20,
+                    x: "-50%",
+                }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                    boxShadow: scrolled
+                        ? '0 8px 40px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)'
+                        : '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
+                }}
             >
-                {/* Gradient border accent line — blue→transparent→green */}
-                {scrolled && (
-                    <div
-                        className="absolute top-0 left-8 right-8 h-px"
-                        style={{
-                            background: 'linear-gradient(90deg, rgba(59,130,246,0.4), transparent 30%, transparent 70%, rgba(16,185,129,0.4))',
-                        }}
-                    />
-                )}
+                {/* Gradient border accent line */}
+                <div
+                    className="absolute top-0 left-6 right-6 h-px opacity-60"
+                    style={{
+                        background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.5) 30%, rgba(16,185,129,0.5) 70%, transparent)',
+                    }}
+                />
+                {/* Bottom subtle glow */}
+                <div
+                    className="absolute bottom-0 left-1/4 right-1/4 h-px opacity-30"
+                    style={{
+                        background: 'linear-gradient(90deg, transparent, rgba(59,130,246,0.4), transparent)',
+                    }}
+                />
 
                 <nav
-                    className="flex items-center justify-between px-5 md:px-6 h-12 md:h-12"
+                    className="flex items-center justify-between px-4 md:px-5 h-12 md:h-[52px]"
                     role="navigation"
                     aria-label="Main navigation"
                 >
@@ -153,11 +165,13 @@ export const Navbar = () => {
                     </Link>
 
                     {/* Center Nav — Desktop */}
-                    <div className="hidden md:flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-0.5">
                         <MagneticLink href="/about" isActive={pathname === "/about"}>About</MagneticLink>
                         <MagneticLink href="/careers" isActive={pathname === "/careers"}>Careers</MagneticLink>
                         <MagneticLink href="/community" isActive={pathname === "/community"}>Community</MagneticLink>
                         <MagneticLink href="/insights" isActive={pathname === "/insights"}>Insights</MagneticLink>
+                        {/* Shop link — disabled until Shopify credentials are configured */}
+                        {/* <MagneticLink href="/shop" isActive={pathname === "/shop"}>Shop</MagneticLink> */}
                         {isRecruiter && (
                             <MagneticLink href="/recruiter" isActive={pathname?.startsWith("/recruiter")}>Recruiter</MagneticLink>
                         )}
@@ -203,7 +217,7 @@ export const Navbar = () => {
                                 </AnimatePresence>
                             </div>
                         ) : (
-                            <Link href="/login" className="btn-embossed-primary text-[12px] tracking-wide text-white px-4 py-1.5 rounded-full">
+                            <Link href="/login" className="btn-embossed-primary text-[12px] tracking-wide text-white px-5 py-2 rounded-full font-medium">
                                 Get Started
                             </Link>
                         )}
@@ -229,7 +243,7 @@ export const Navbar = () => {
                         </button>
                     </div>
                 </nav>
-            </header>
+            </motion.header>
 
             {/* Full-screen Mobile Menu */}
             <AnimatePresence>
@@ -252,6 +266,8 @@ export const Navbar = () => {
                                     { href: "/careers", label: "Careers" },
                                     { href: "/community", label: "Community" },
                                     { href: "/insights", label: "Insights" },
+                                    // Shop disabled until Shopify credentials are configured
+                                    // { href: "/shop", label: "Shop" },
                                     ...(isRecruiter ? [{ href: "/recruiter", label: "Recruiter" }] : []),
                                 ].map((link, i) => (
                                     <motion.div

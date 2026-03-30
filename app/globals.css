@@ -135,9 +135,10 @@
     @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg;
   }
 
-  /* Blue-to-green gradient text */
+  /* Blue-to-green gradient text — 4-stop shimmer */
   .text-gradient {
-    @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-emerald-400 to-cyan-400;
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(to right, #60a5fa, #22d3ee, #34d399, #2dd4bf);
   }
 
   .text-gradient-subtle {
@@ -171,9 +172,16 @@
     @apply glass-card transition-all duration-500 hover:bg-white/[0.06] hover:border-white/[0.1] hover:shadow-2xl hover:shadow-blue-500/[0.05];
   }
 
-  /* Cinematic section divider */
+  /* Gold gradient text */
+  .text-gradient-gold {
+    @apply text-transparent bg-clip-text;
+    background-image: linear-gradient(135deg, #E8C876, #D4A855, #B8923D);
+  }
+
+  /* Cinematic section divider — gradient */
   .section-divider {
-    @apply border-t border-white/[0.06];
+    height: 1px;
+    background: linear-gradient(to right, rgba(59,130,246,0.2), transparent 50%, rgba(16,185,129,0.2));
   }
 
   /* Smooth number font variant */
@@ -238,6 +246,13 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.15),
       inset 0 -1px 0 rgba(0, 0, 0, 0.1);
     transform: translateY(-1px);
+  }
+
+  /* Button press haptic */
+  .btn-embossed-primary:active,
+  .btn-embossed-secondary:active {
+    transform: scale(0.97) translateY(0px);
+    transition: transform 0.1s ease;
   }
 
   /* Embossed card */
@@ -433,5 +448,21 @@ canvas {
   66% {
     background-position: 50% 100%, 50% 0%, 0% 100%;
     background-size: 150% 150%, 180% 180%, 200% 200%;
+  }
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  /* Content visibility for below-fold sections */
+  section:not(:first-child) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 600px;
+  }
+}
+
+/* Disable heavy WebGL on touch/low-power devices */
+@media (hover: none) {
+  canvas {
+    will-change: auto;
   }
 }

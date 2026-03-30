@@ -8,6 +8,7 @@ import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { CustomCursor } from "@/components/ui/custom-cursor";
 import { ArrowRight } from "lucide-react";
+import { FallingPattern } from "@/components/ui/falling-pattern";
 
 const BackgroundLogo3D = dynamic(() => import('@/components/ui/background-logo-3d').then(mod => ({ default: mod.BackgroundLogo3D })), { ssr: false });
 
@@ -44,6 +45,14 @@ export default function AboutPage() {
 
     return (
         <main ref={containerRef} className="bg-[#060608] text-white overflow-hidden relative">
+            <FallingPattern
+                className="fixed inset-0 z-0 opacity-20 pointer-events-none [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black_80%)]"
+                color="rgba(59,130,246,0.8)"
+                backgroundColor="transparent"
+                duration={120}
+                blurIntensity="0.5em"
+                density={1}
+            />
             <CustomCursor />
             <Navbar />
             <BackgroundLogo3D className="fixed inset-0 z-0 opacity-30" />

@@ -26,6 +26,11 @@ const config: Config = {
                     light: "#34d399",
                     dark: "#059669",
                 },
+                gold: {
+                    DEFAULT: "#D4A855",
+                    light: "#E8C876",
+                    dark: "#B8923D",
+                },
                 surface: {
                     DEFAULT: "rgba(255,255,255,0.03)",
                     hover: "rgba(255,255,255,0.06)",
@@ -34,7 +39,7 @@ const config: Config = {
             },
             fontFamily: {
                 sans: ["var(--font-inter)", "system-ui", "sans-serif"],
-                display: ["var(--font-inter)", "system-ui", "sans-serif"],
+                display: ["var(--font-display)", "system-ui", "sans-serif"],
             },
             backgroundImage: {
                 "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

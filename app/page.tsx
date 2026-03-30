@@ -6,6 +6,7 @@ import { Stats } from "@/components/sections/stats";
 import { Testimonials } from "@/components/sections/testimonials";
 import { CTA } from "@/components/sections/cta";
 import { CustomCursor } from "@/components/ui/custom-cursor";
+import { WebGLShaderBackground } from "@/components/ui/web-gl-shader-background";
 
 export default function Home() {
     return (
@@ -13,10 +14,18 @@ export default function Home() {
             <CustomCursor />
             <Navbar />
             <ScrollingLogo3DHero />
-            <Features />
-            <Stats />
-            <Testimonials />
-            <CTA />
+
+            {/* Bottom sections — WebGL shader scoped only to this container */}
+            <div className="relative overflow-hidden">
+                <WebGLShaderBackground />
+                <div className="relative z-10">
+                    <Features />
+                    <Stats />
+                    <Testimonials />
+                    <CTA />
+                </div>
+            </div>
+
             <Footer />
         </main>
     );
