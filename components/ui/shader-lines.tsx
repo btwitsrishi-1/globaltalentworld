@@ -3,6 +3,7 @@
 import { useRef, useMemo } from "react"
 import { Canvas, useFrame } from "@react-three/fiber"
 import * as THREE from "three"
+import { useVisible } from "@/hooks/use-visible"
 
 const vertexShader = `
   void main() {
@@ -30,7 +31,7 @@ const fragmentShader = `
   }
 `
 
-function ShaderPlane() {
+function ShaderPlane({ paused }: { paused: boolean }) {
   const meshRef = useRef<THREE.Mesh>(null)
   const { width, height } = useRef({ width: 1, height: 1 }).current
 
@@ -44,6 +45,7 @@ function ShaderPlane() {
   )
 
   useFrame(({ size }) => {
+    if (paused) return
     uniforms.time.value += 0.05
     uniforms.resolution.value.set(size.width, size.height)
   })
@@ -61,15 +63,18 @@ function ShaderPlane() {
 }
 
 export function ShaderAnimation({ className = "" }: { className?: string }) {
+  const { ref, visible } = useVisible()
+
   return (
-    <div className={`absolute inset-0 w-full h-full ${className}`}>
+    <div ref={ref} className={`absolute inset-0 w-full h-full ${className}`}>
       <Canvas
         camera={{ position: [0, 0, 1] }}
         gl={{ antialias: false, alpha: false }}
         dpr={[1, 1]}
         style={{ width: "100%", height: "100%" }}
+        frameloop={visible ? "always" : "never"}
       >
-        <ShaderPlane />
+        <ShaderPlane paused={!visible} />
       </Canvas>
     </div>
   )

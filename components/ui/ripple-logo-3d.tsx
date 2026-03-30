@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useCallback, useEffect, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { useVisible } from '@/hooks/use-visible'
 
 const rippleVertexShader = `
   precision mediump float;
@@ -71,7 +72,6 @@ const rippleFragmentShader = `
   }
 `
 
-// Wire vertex shader: WireframeGeometry has no normals, so we skip normal-based displacement
 const wireVertexShader = `
   precision mediump float;
 
@@ -90,7 +90,6 @@ const wireVertexShader = `
     float idle = sin(position.x * 2.0 + uTime * 0.5) * cos(position.y * 2.0 + uTime * 0.3) * 0.02;
 
     vDisplacement = displacement + idle;
-    // No normal attribute on WireframeGeometry — skip normal-based displacement
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }
 `
@@ -116,12 +115,10 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
   const { viewport } = useThree()
   const [clonedScene] = useState(() => scene.clone())
 
-  // Track the base dimensions for dynamic scaling
   const baseMaxDim = useRef(1)
   const currentScale = useRef(1)
   const isCentered = useRef(false)
 
-  // Blue body + green glow/wireframe
   const uniforms = useMemo(() => ({
     uTime: { value: 0 },
     uMouse: { value: new THREE.Vector2(0, 0) },
@@ -140,7 +137,6 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
     uWireColor: { value: new THREE.Color(0x34d399) },
   }), [])
 
-  // One-time setup: apply materials + center the model (but NOT scale)
   useEffect(() => {
     if (!clonedScene || isCentered.current) return
 
@@ -170,7 +166,6 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
       }
     })
 
-    // Center the model
     const box = new THREE.Box3().setFromObject(clonedScene)
     const center = box.getCenter(new THREE.Vector3())
     const size = box.getSize(new THREE.Vector3())
@@ -178,20 +173,17 @@ function RippleLogo({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: n
     baseMaxDim.current = Math.max(size.x, size.y, size.z)
     isCentered.current = true
 
-    // Set initial scale
     const targetScale = (viewport.height * 1.6) / baseMaxDim.current
     clonedScene.scale.setScalar(targetScale)
     currentScale.current = targetScale
   }, [clonedScene, uniforms, wireUniforms, viewport.height])
 
-  // Smoothly update scale + rotation + uniforms every frame
   useFrame((state) => {
     if (!logoRef.current || !clonedScene) return
 
     const time = state.clock.elapsedTime
     const vp = state.viewport
 
-    // Smoothly lerp scale based on current viewport size
     const targetScale = (vp.height * 1.6) / baseMaxDim.current
     currentScale.current += (targetScale - currentScale.current) * 0.08
     clonedScene.scale.setScalar(currentScale.current)
@@ -246,6 +238,7 @@ export function RippleLogo3D({ className = '' }: { className?: string }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [hasError, setHasError] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const { ref: visRef, visible } = useVisible()
 
   useEffect(() => {
     setIsClient(true)
@@ -259,16 +252,20 @@ export function RippleLogo3D({ className = '' }: { className?: string }) {
   }, [])
 
   useEffect(() => {
+    if (!visible) return
     window.addEventListener('mousemove', handleMouseMove, { passive: true })
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [handleMouseMove])
+  }, [handleMouseMove, visible])
 
   if (hasError || !isClient) {
     return <LogoFallback />
   }
 
   return (
-    <div ref={containerRef} className={className}>
+    <div ref={(el) => {
+      (containerRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+      (visRef as React.MutableRefObject<HTMLDivElement | null>).current = el;
+    }} className={className}>
       <Canvas
         camera={{ position: [0, 0, 5], fov: 50 }}
         gl={{ alpha: true, antialias: true, powerPreference: 'high-performance', premultipliedAlpha: false }}
@@ -276,6 +273,7 @@ export function RippleLogo3D({ className = '' }: { className?: string }) {
         style={{ background: 'transparent' }}
         onError={() => setHasError(true)}
         fallback={<LogoFallback />}
+        frameloop={visible ? "always" : "never"}
       >
         <React.Suspense fallback={null}>
           <LogoScene mouse={mouseRef} />
