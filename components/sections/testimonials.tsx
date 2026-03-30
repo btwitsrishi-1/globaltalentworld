@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const testimonials = [
     {
@@ -60,21 +61,21 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[num
             {/* Stars */}
             <div className="flex gap-0.5 mb-5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-amber-400/80 text-amber-400/80" />
+                    <Star key={i} className="w-3.5 h-3.5 fill-[#D4A855] text-[#D4A855]" />
                 ))}
             </div>
 
-            <p className="text-white/45 mb-7 leading-relaxed text-[14px] group-hover:text-white/55 transition-colors duration-500">
+            <p className="text-white/50 mb-7 leading-relaxed text-[14px] font-display group-hover:text-white/60 transition-colors duration-500">
                 &ldquo;{testimonial.quote}&rdquo;
             </p>
 
             <div className="flex items-center gap-3 pt-5 border-t border-white/[0.04]">
-                <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${testimonial.gradient} flex items-center justify-center text-white text-[11px] font-semibold`}>
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${testimonial.gradient} flex items-center justify-center text-white text-[11px] font-semibold shadow-lg`}>
                     {testimonial.initials}
                 </div>
                 <div>
                     <div className="font-medium text-white text-sm">{testimonial.author}</div>
-                    <div className="text-white/25 text-xs">{testimonial.role} &middot; {testimonial.company}</div>
+                    <div className="text-white/35 text-xs">{testimonial.role} &middot; {testimonial.company}</div>
                 </div>
             </div>
         </div>
@@ -82,8 +83,17 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[num
 }
 
 export const Testimonials = () => {
-    // Double the array for seamless marquee
     const marqueeItems = [...testimonials, ...testimonials];
+    const [pullQuoteIndex, setPullQuoteIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setPullQuoteIndex((prev) => (prev + 1) % testimonials.length);
+        }, 5000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const currentQuote = testimonials[pullQuoteIndex];
 
     return (
         <section className="py-32 md:py-44 bg-[#060608] relative overflow-hidden">
@@ -102,17 +112,44 @@ export const Testimonials = () => {
                     <p className="text-[13px] font-medium tracking-[0.3em] uppercase text-blue-400/60 mb-6">
                         Testimonials
                     </p>
-                    <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                    <h2 className="text-4xl md:text-5xl font-display font-bold text-white tracking-tight">
                         Loved by talent
                         <br />
-                        <span className="text-white/30">worldwide</span>
+                        <span className="text-white/40">worldwide</span>
                     </h2>
                 </motion.div>
             </div>
 
+            {/* Rotating pull-quote — large featured testimonial */}
+            <div className="max-w-5xl mx-auto px-6 mb-20 relative z-10">
+                <div className="min-h-[180px] md:min-h-[220px] flex items-center justify-center">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={pullQuoteIndex}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                            className="text-center"
+                        >
+                            <p className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white/20 leading-[1.15] tracking-tight mb-8">
+                                &ldquo;{currentQuote.quote}&rdquo;
+                            </p>
+                            <div className="flex items-center justify-center gap-3">
+                                <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${currentQuote.gradient} flex items-center justify-center text-white text-[10px] font-semibold`}>
+                                    {currentQuote.initials}
+                                </div>
+                                <span className="text-white/40 text-sm font-medium">{currentQuote.author}</span>
+                                <span className="text-white/20 text-sm">&middot;</span>
+                                <span className="text-white/30 text-sm">{currentQuote.role}</span>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </div>
+
             {/* Marquee row 1 — left to right */}
             <div className="relative mb-4">
-                {/* Fade edges */}
                 <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
                 <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
 
@@ -135,7 +172,6 @@ export const Testimonials = () => {
 
             {/* Marquee row 2 — right to left */}
             <div className="relative">
-                {/* Fade edges */}
                 <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
                 <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
 

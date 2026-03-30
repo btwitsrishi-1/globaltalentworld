@@ -21,8 +21,13 @@ const ShaderAnimation = dynamic(
   { ssr: false }
 )
 
-const LightUpShader = dynamic(
-  () => import('@/components/ui/light-up-shader').then(mod => ({ default: mod.LightUpShader })),
+const GodRays = dynamic(
+  () => import('@paper-design/shaders-react').then(mod => ({ default: mod.GodRays })),
+  { ssr: false }
+)
+
+const LiveTicker = dynamic(
+  () => import('@/components/ui/live-ticker').then(mod => ({ default: mod.LiveTicker })),
   { ssr: false }
 )
 
@@ -36,29 +41,14 @@ function HeroFallback() {
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
-const letterVariants = {
-  hidden: { opacity: 0, y: 80, rotateX: -90, filter: 'blur(10px)' },
-  visible: (i: number) => ({
+const slideUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: (delay: number) => ({
     opacity: 1,
     y: 0,
-    rotateX: 0,
-    filter: 'blur(0px)',
     transition: {
-      delay: 0.5 + i * 0.04,
+      delay,
       duration: 1,
-      ease: EASE,
-    },
-  }),
-}
-
-const wordVariants = {
-  hidden: { opacity: 0, y: 40 },
-  visible: (i: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: 0.3 + i * 0.15,
-      duration: 1.2,
       ease: EASE,
     },
   }),
@@ -75,9 +65,6 @@ export function ScrollingLogo3DHero() {
   const heroScale = useTransform(scrollYProgress, [0, 0.5], [1, 0.95])
   const heroY = useTransform(scrollYProgress, [0, 0.5], [0, -60])
   const bgScale = useTransform(scrollYProgress, [0, 1], [1, 1.15])
-
-  const line1 = 'Global'
-  const line2 = 'Talent World'
 
   return (
     <section
@@ -133,15 +120,36 @@ export function ScrollingLogo3DHero() {
         <FloatingElements className="absolute inset-0 z-0 opacity-50" />
       </Suspense>
 
-      {/* Light-up starfield — directly behind the 3D logo */}
-      <div className="absolute inset-0 z-[5] pointer-events-none">
+      {/* God rays — atmospheric light streaks */}
+      <div className="absolute inset-0 z-[2] opacity-40 pointer-events-none">
         <Suspense fallback={null}>
-          <LightUpShader className="w-full h-full" />
+          <GodRays
+            colorBack="#00000000"
+            colors={["#3b82f640", "#10b98140", "#60a5fa30", "#06b6d430"]}
+            colorBloom="#3b82f6"
+            offsetX={0.85}
+            offsetY={-1}
+            intensity={0.5}
+            spotty={0.45}
+            midSize={10}
+            midIntensity={0}
+            density={0.38}
+            bloom={0.3}
+            speed={0.5}
+            scale={1.6}
+            style={{
+              height: "100%",
+              width: "100%",
+              position: "absolute",
+              top: 0,
+              left: 0,
+            }}
+          />
         </Suspense>
       </div>
 
-      {/* 3D Ripple Logo — center */}
-      <div className="absolute inset-0 z-10">
+      {/* 3D Ripple Logo — center hero */}
+      <div className="absolute inset-0 z-10" style={{ filter: 'drop-shadow(0 0 60px rgba(59,130,246,0.35)) drop-shadow(0 0 120px rgba(59,130,246,0.15))' }}>
         <Suspense fallback={<HeroFallback />}>
           <RippleLogo3D className="w-full h-full" />
         </Suspense>
@@ -156,7 +164,7 @@ export function ScrollingLogo3DHero() {
         <motion.div
           initial={{ opacity: 0, y: 20, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8, delay: 0.2, ease: EASE }}
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm mb-10"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -165,68 +173,37 @@ export function ScrollingLogo3DHero() {
           </span>
         </motion.div>
 
-        {/* Title — letter-by-letter reveal with 3D perspective */}
-        <div className="mb-8" style={{ perspective: '1000px' }}>
-          {/* Line 1: "Global" */}
-          <div className="overflow-hidden mb-2">
-            <motion.div
-              custom={0}
-              variants={wordVariants}
-              initial="hidden"
-              animate="visible"
-              className="flex justify-center"
-            >
-              {line1.split('').map((char, i) => (
-                <motion.span
-                  key={`l1-${i}`}
-                  custom={i}
-                  variants={letterVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="text-fluid-hero font-bold tracking-tight text-gradient-subtle inline-block"
-                  style={{ transformOrigin: 'center bottom' }}
-                >
-                  {char}
-                </motion.span>
-              ))}
-            </motion.div>
-          </div>
-          {/* Line 2: "Talent World" */}
-          <div className="overflow-hidden">
-            <motion.div
-              custom={1}
-              variants={wordVariants}
-              initial="hidden"
-              animate="visible"
-              className="flex justify-center gap-[0.3em]"
-            >
-              {line2.split(' ').map((word, wi) => (
-                <span key={`w-${wi}`} className={`inline-flex ${wi > 0 ? 'ml-[0.3em]' : ''}`}>
-                  {word.split('').map((char, ci) => (
-                    <motion.span
-                      key={`l2-${wi}-${ci}`}
-                      custom={line1.length + wi * 3 + ci}
-                      variants={letterVariants}
-                      initial="hidden"
-                      animate="visible"
-                      className="text-fluid-hero font-bold tracking-tight text-gradient inline-block"
-                      style={{ transformOrigin: 'center bottom' }}
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
-                </span>
-              ))}
-            </motion.div>
-          </div>
+        {/* Title — slide-up reveal */}
+        <div className="mb-8">
+          <motion.div
+            custom={0.4}
+            variants={slideUp}
+            initial="hidden"
+            animate="visible"
+            className="mb-2"
+          >
+            <span className="text-fluid-hero font-display font-bold tracking-tight text-gradient-subtle block">
+              Global
+            </span>
+          </motion.div>
+          <motion.div
+            custom={0.6}
+            variants={slideUp}
+            initial="hidden"
+            animate="visible"
+          >
+            <span className="text-fluid-hero font-display font-bold tracking-tight text-gradient block">
+              Talent World
+            </span>
+          </motion.div>
         </div>
 
         {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-base sm:text-lg md:text-xl text-white/35 max-w-xl mx-auto font-light leading-relaxed mb-14"
+          transition={{ duration: 1, delay: 1, ease: EASE }}
+          className="text-base sm:text-lg md:text-xl text-white/50 max-w-xl mx-auto font-light leading-relaxed mb-14"
         >
           Where exceptional minds meet extraordinary opportunities.
           <br className="hidden sm:block" />
@@ -237,7 +214,7 @@ export function ScrollingLogo3DHero() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, delay: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 1, delay: 1.2, ease: EASE }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
           <Link
@@ -255,17 +232,14 @@ export function ScrollingLogo3DHero() {
           </Link>
         </motion.div>
 
-        {/* Trusted by — inline below CTA */}
+        {/* Live activity ticker */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 2, duration: 1 }}
-          className="mt-16 flex flex-wrap justify-center items-center gap-x-6 gap-y-2"
+          transition={{ delay: 1.8, duration: 1 }}
+          className="mt-10 flex justify-center"
         >
-          <span className="text-[10px] tracking-[0.25em] uppercase text-white/15 mr-2">Trusted by</span>
-          {['Stripe', 'Vercel', 'Linear', 'Notion'].map((co) => (
-            <span key={co} className="text-white/15 text-xs font-medium tracking-wide">{co}</span>
-          ))}
+          <LiveTicker />
         </motion.div>
       </motion.div>
 

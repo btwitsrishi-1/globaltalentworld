@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
+import { motion, useInView, useMotionValue, useTransform, animate, useScroll } from "framer-motion";
 import { useRef, useEffect } from "react";
 
 const stats = [
@@ -36,38 +36,55 @@ function AnimatedCounter({ value, suffix, prefix, inView }: { value: number; suf
 export const Stats = () => {
     const ref = useRef<HTMLDivElement>(null);
     const isInView = useInView(ref, { once: true, margin: "-100px" });
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const { scrollYProgress } = useScroll({
+        target: containerRef,
+        offset: ["start end", "end start"],
+    });
+
+    const x = useTransform(scrollYProgress, [0, 1], [80, -80]);
 
     return (
-        <section ref={ref} className="py-28 md:py-36 px-6 bg-[#060608] relative overflow-hidden">
-            {/* Top divider */}
-            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+        <section ref={containerRef} className="py-20 md:py-28 bg-[#060608] relative overflow-hidden">
+            {/* Top divider — gradient */}
+            <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
 
             {/* Background accent */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-blue-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-blue-500/[0.02] rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="max-w-6xl mx-auto relative z-10">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-0 md:divide-x md:divide-white/[0.06]">
+            <div ref={ref} className="relative z-10 overflow-hidden">
+                <motion.div
+                    className="flex items-center gap-0 md:gap-0"
+                    style={{ x }}
+                >
                     {stats.map((stat, index) => (
                         <motion.div
                             key={stat.label}
-                            initial={{ opacity: 0, y: 30 }}
+                            initial={{ opacity: 0, y: 40 }}
                             animate={isInView ? { opacity: 1, y: 0 } : {}}
                             transition={{ duration: 0.8, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-                            className="text-center md:px-8 group"
+                            className="flex-shrink-0 flex items-center"
                         >
-                            <div className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-3 tracking-tight">
-                                <AnimatedCounter value={stat.value} suffix={stat.suffix} prefix={stat.prefix} inView={isInView} />
+                            <div className="text-center px-8 md:px-16 group">
+                                <div className="text-6xl sm:text-7xl md:text-8xl lg:text-[120px] font-display font-bold text-white/90 mb-2 tracking-tighter leading-none">
+                                    <AnimatedCounter value={stat.value} suffix={stat.suffix} prefix={stat.prefix} inView={isInView} />
+                                </div>
+                                <div className="text-white/35 text-[10px] md:text-xs font-medium uppercase tracking-[0.25em] group-hover:text-white/50 transition-colors duration-500">
+                                    {stat.label}
+                                </div>
                             </div>
-                            <div className="text-white/25 text-[11px] md:text-xs font-medium uppercase tracking-[0.25em] group-hover:text-white/40 transition-colors duration-500">
-                                {stat.label}
-                            </div>
+                            {/* Gradient divider between stats */}
+                            {index < stats.length - 1 && (
+                                <div className="w-px h-16 md:h-24 bg-gradient-to-b from-transparent via-blue-500/20 to-transparent flex-shrink-0" />
+                            )}
                         </motion.div>
                     ))}
-                </div>
+                </motion.div>
             </div>
 
-            {/* Bottom divider */}
-            <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+            {/* Bottom divider — gradient */}
+            <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
         </section>
     );
 };

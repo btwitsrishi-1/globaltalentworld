@@ -24,7 +24,7 @@ const fragmentShader = `
     float radius  = min(iResolution.x, iResolution.y) * 0.5;
 
     // Dim the center so the 3D logo reads cleanly
-    float centerDim = smoothstep(radius * 0.3, radius * 0.5, dist);
+    float centerDim = smoothstep(0.0, radius * 0.9, dist);
 
     for (int i = 0; i < 20; i++) {
       float fi = float(i) + 1.0;
@@ -51,7 +51,7 @@ const fragmentShader = `
     O.rgb = mix(O.rgb, vec3(0.15, 0.35, 1.0), 0.18);
 
     // Dim the dead center so the spinning logo is the focal point
-    O.rgb = mix(O.rgb * 0.25, O.rgb, centerDim);
+    O.rgb = mix(O.rgb * 0.7, O.rgb, centerDim);
   }
 
   void main() {

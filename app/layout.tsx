@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { AuthProvider } from "@/lib/auth-context";
@@ -8,10 +8,18 @@ import { JobsProvider } from "@/lib/jobs-context";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SmoothScroll } from "@/components/ui/smooth-scroll";
 import { GrainOverlay } from "@/components/ui/grain-overlay";
+import { ScrollProgress } from "@/components/ui/scroll-progress";
 
 const inter = Inter({
     subsets: ["latin"],
     variable: "--font-inter",
+    display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+    subsets: ["latin"],
+    variable: "--font-display",
+    weight: ["400", "500", "600", "700"],
     display: "swap",
 });
 
@@ -52,7 +60,8 @@ export default function RootLayout({
             <body
                 className={cn(
                     "min-h-screen bg-background font-sans antialiased",
-                    inter.variable
+                    inter.variable,
+                    spaceGrotesk.variable
                 )}
             >
                 <ThemeProvider
@@ -62,6 +71,7 @@ export default function RootLayout({
                     disableTransitionOnChange
                 >
                     <SmoothScroll>
+                        <ScrollProgress />
                         <GrainOverlay />
                         <AuthProvider>
                             <AdminProvider>
