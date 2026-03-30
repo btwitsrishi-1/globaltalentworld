@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { ArrowDown } from 'lucide-react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { useDeviceConfig } from '@/lib/device-context'
 
 const RippleLogo3D = dynamic(
   () => import('@/components/ui/ripple-logo-3d').then(mod => ({ default: mod.RippleLogo3D })),
@@ -55,6 +56,7 @@ const slideUp = {
 }
 
 export function ScrollingLogo3DHero() {
+  const config = useDeviceConfig()
   const sectionRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -71,10 +73,12 @@ export function ScrollingLogo3DHero() {
       ref={sectionRef}
       className="relative min-h-[110vh] w-full flex items-center justify-center overflow-hidden"
     >
-      {/* Shader lines — deepest background layer */}
-      <div className="absolute inset-0 z-0 opacity-30">
-        <ShaderAnimation />
-      </div>
+      {/* Shader lines — deepest background layer (disabled on low/mid) */}
+      {config.enableShaderBackground && (
+        <div className="absolute inset-0 z-0 opacity-30">
+          <ShaderAnimation />
+        </div>
+      )}
 
       {/* Cinematic background overlay with scroll zoom */}
       <motion.div
@@ -115,45 +119,51 @@ export function ScrollingLogo3DHero() {
         }}
       />
 
-      {/* Floating 3D elements — background */}
-      <Suspense fallback={null}>
-        <FloatingElements className="absolute inset-0 z-0 opacity-50" />
-      </Suspense>
-
-      {/* God rays — atmospheric light streaks */}
-      <div className="absolute inset-0 z-[2] opacity-40 pointer-events-none">
+      {/* Floating 3D elements — background (disabled on low) */}
+      {config.enableFloatingElements && (
         <Suspense fallback={null}>
-          <GodRays
-            colorBack="#00000000"
-            colors={["#3b82f640", "#10b98140", "#60a5fa30", "#06b6d430"]}
-            colorBloom="#3b82f6"
-            offsetX={0.85}
-            offsetY={-1}
-            intensity={0.5}
-            spotty={0.45}
-            midSize={10}
-            midIntensity={0}
-            density={0.38}
-            bloom={0.3}
-            speed={0.5}
-            scale={1.6}
-            style={{
-              height: "100%",
-              width: "100%",
-              position: "absolute",
-              top: 0,
-              left: 0,
-            }}
-          />
+          <FloatingElements className="absolute inset-0 z-0 opacity-50" />
         </Suspense>
-      </div>
+      )}
+
+      {/* God rays — atmospheric light streaks (disabled on low) */}
+      {config.enableGodRays && (
+        <div className="absolute inset-0 z-[2] opacity-40 pointer-events-none">
+          <Suspense fallback={null}>
+            <GodRays
+              colorBack="#00000000"
+              colors={["#3b82f640", "#10b98140", "#60a5fa30", "#06b6d430"]}
+              colorBloom="#3b82f6"
+              offsetX={0.85}
+              offsetY={-1}
+              intensity={0.5}
+              spotty={0.45}
+              midSize={10}
+              midIntensity={0}
+              density={0.38}
+              bloom={0.3}
+              speed={0.5}
+              scale={1.6}
+              style={{
+                height: "100%",
+                width: "100%",
+                position: "absolute",
+                top: 0,
+                left: 0,
+              }}
+            />
+          </Suspense>
+        </div>
+      )}
 
       {/* 3D Ripple Logo — center hero */}
-      <div className="absolute inset-0 z-10" style={{ filter: 'drop-shadow(0 0 60px rgba(59,130,246,0.35)) drop-shadow(0 0 120px rgba(59,130,246,0.15))' }}>
-        <Suspense fallback={<HeroFallback />}>
-          <RippleLogo3D className="w-full h-full" />
-        </Suspense>
-      </div>
+      {config.enableRippleLogo && (
+        <div className="absolute inset-0 z-10" style={{ filter: 'drop-shadow(0 0 60px rgba(59,130,246,0.35)) drop-shadow(0 0 120px rgba(59,130,246,0.15))' }}>
+          <Suspense fallback={<HeroFallback />}>
+            <RippleLogo3D className="w-full h-full" />
+          </Suspense>
+        </div>
+      )}
 
       {/* Hero Content with scroll parallax */}
       <motion.div

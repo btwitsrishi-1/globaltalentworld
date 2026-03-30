@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { useDeviceConfig } from "@/lib/device-context";
 
 const NavbarLogo3D = dynamic(
     () => import('@/components/ui/navbar-logo-3d').then(mod => ({ default: mod.NavbarLogo3D })),
@@ -76,12 +77,19 @@ const MobileNavLink = ({ href, children, onClick, isActive }: { href: string; ch
     </Link>
 );
 
+const CSSLogo = () => (
+    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-emerald-500 flex items-center justify-center">
+        <span className="text-white font-bold text-sm">G</span>
+    </div>
+);
+
 export const Navbar = () => {
     const { user, logout } = useAuth();
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname();
+    const { enableNavbarLogo3D } = useDeviceConfig();
 
     // Don't show navbar on admin pages
     const isAdminPage = pathname?.startsWith('/admin');
@@ -156,9 +164,9 @@ export const Navbar = () => {
                     role="navigation"
                     aria-label="Main navigation"
                 >
-                    {/* Logo — 3D spinning */}
+                    {/* Logo — 3D spinning on high-end, CSS on low/mid */}
                     <Link href="/" className="flex items-center gap-3 group" aria-label="Go to homepage">
-                        <NavbarLogo3D />
+                        {enableNavbarLogo3D ? <NavbarLogo3D /> : <CSSLogo />}
                         <span className="text-white font-semibold text-sm tracking-wide hidden sm:block">
                             GTW
                         </span>

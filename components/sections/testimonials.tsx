@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Star } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useDeviceConfig } from "@/lib/device-context";
 
 const testimonials = [
     {
@@ -85,6 +86,7 @@ function TestimonialCard({ testimonial }: { testimonial: typeof testimonials[num
 export const Testimonials = () => {
     const marqueeItems = [...testimonials, ...testimonials];
     const [pullQuoteIndex, setPullQuoteIndex] = useState(0);
+    const { enableMarquee } = useDeviceConfig();
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -148,49 +150,62 @@ export const Testimonials = () => {
                 </div>
             </div>
 
-            {/* Marquee row 1 — left to right */}
-            <div className="relative mb-4">
-                <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
+            {enableMarquee ? (
+                <>
+                    {/* Marquee row 1 — left to right */}
+                    <div className="relative mb-4">
+                        <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
+                        <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
 
-                <motion.div
-                    className="flex gap-4"
-                    animate={{ x: [0, -(testimonials.length * 416)] }}
-                    transition={{
-                        x: {
-                            duration: 40,
-                            repeat: Infinity,
-                            ease: "linear",
-                        },
-                    }}
-                >
-                    {marqueeItems.map((testimonial, i) => (
-                        <TestimonialCard key={`row1-${i}`} testimonial={testimonial} />
-                    ))}
-                </motion.div>
-            </div>
+                        <motion.div
+                            className="flex gap-4"
+                            animate={{ x: [0, -(testimonials.length * 416)] }}
+                            transition={{
+                                x: {
+                                    duration: 40,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                },
+                            }}
+                        >
+                            {marqueeItems.map((testimonial, i) => (
+                                <TestimonialCard key={`row1-${i}`} testimonial={testimonial} />
+                            ))}
+                        </motion.div>
+                    </div>
 
-            {/* Marquee row 2 — right to left */}
-            <div className="relative">
-                <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
-                <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
+                    {/* Marquee row 2 — right to left */}
+                    <div className="relative">
+                        <div className="absolute left-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-r from-[#060608] to-transparent z-10 pointer-events-none" />
+                        <div className="absolute right-0 top-0 bottom-0 w-32 md:w-64 bg-gradient-to-l from-[#060608] to-transparent z-10 pointer-events-none" />
 
-                <motion.div
-                    className="flex gap-4"
-                    animate={{ x: [-(testimonials.length * 416), 0] }}
-                    transition={{
-                        x: {
-                            duration: 45,
-                            repeat: Infinity,
-                            ease: "linear",
-                        },
-                    }}
-                >
-                    {marqueeItems.map((testimonial, i) => (
-                        <TestimonialCard key={`row2-${i}`} testimonial={testimonial} />
-                    ))}
-                </motion.div>
-            </div>
+                        <motion.div
+                            className="flex gap-4"
+                            animate={{ x: [-(testimonials.length * 416), 0] }}
+                            transition={{
+                                x: {
+                                    duration: 45,
+                                    repeat: Infinity,
+                                    ease: "linear",
+                                },
+                            }}
+                        >
+                            {marqueeItems.map((testimonial, i) => (
+                                <TestimonialCard key={`row2-${i}`} testimonial={testimonial} />
+                            ))}
+                        </motion.div>
+                    </div>
+                </>
+            ) : (
+                /* Low-tier: static grid of cards — no animation overhead */
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {testimonials.slice(0, 3).map((testimonial, i) => (
+                            <TestimonialCard key={`static-${i}`} testimonial={testimonial} />
+                        ))}
+                    </div>
+                </div>
+            )}
         </section>
     );
 };

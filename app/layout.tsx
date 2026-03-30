@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SmoothScroll } from "@/components/ui/smooth-scroll";
 import { GrainOverlay } from "@/components/ui/grain-overlay";
 import { ScrollProgress } from "@/components/ui/scroll-progress";
+import { DeviceProvider } from "@/lib/device-context";
 
 const inter = Inter({
     subsets: ["latin"],
@@ -70,17 +71,19 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    <SmoothScroll>
-                        <ScrollProgress />
-                        <GrainOverlay />
-                        <AuthProvider>
-                            <AdminProvider>
-                                <JobsProvider>
-                                    {children}
-                                </JobsProvider>
-                            </AdminProvider>
-                        </AuthProvider>
-                    </SmoothScroll>
+                    <DeviceProvider>
+                        <SmoothScroll>
+                            <ScrollProgress />
+                            <GrainOverlay />
+                            <AuthProvider>
+                                <AdminProvider>
+                                    <JobsProvider>
+                                        {children}
+                                    </JobsProvider>
+                                </AdminProvider>
+                            </AuthProvider>
+                        </SmoothScroll>
+                    </DeviceProvider>
                 </ThemeProvider>
             </body>
         </html>

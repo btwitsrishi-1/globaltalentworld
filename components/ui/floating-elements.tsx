@@ -4,6 +4,7 @@ import React, { useRef, useMemo, useCallback, useEffect, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import * as THREE from 'three'
 import { useVisible } from '@/hooks/use-visible'
+import { useDeviceConfig } from '@/lib/device-context'
 
 function FloatingShape({
   position,
@@ -72,8 +73,8 @@ function FloatingShape({
   return <mesh ref={meshRef} geometry={geo} material={mat} scale={scale} />
 }
 
-function FloatingScene({ mouse }: { mouse: React.MutableRefObject<{ x: number; y: number }> }) {
-  const shapes = useMemo(() => [
+function FloatingScene({ mouse, maxShapes = 8 }: { mouse: React.MutableRefObject<{ x: number; y: number }>; maxShapes?: number }) {
+  const allShapes = useMemo(() => [
     { position: [-4, 2, -3] as [number, number, number], geometry: 'icosahedron' as const, scale: 0.8, speed: 0.6, color: '#3b82f6' },
     { position: [4, -1.5, -4] as [number, number, number], geometry: 'octahedron' as const, scale: 0.6, speed: 0.8, color: '#10b981' },
     { position: [-3, -2, -2] as [number, number, number], geometry: 'tetrahedron' as const, scale: 0.5, speed: 0.7, color: '#60a5fa' },
@@ -83,6 +84,8 @@ function FloatingScene({ mouse }: { mouse: React.MutableRefObject<{ x: number; y
     { position: [5, 1, -6] as [number, number, number], geometry: 'icosahedron' as const, scale: 0.5, speed: 0.4, color: '#3b82f6' },
     { position: [1, 3, -4] as [number, number, number], geometry: 'tetrahedron' as const, scale: 0.3, speed: 1.1, color: '#059669' },
   ], [])
+
+  const shapes = useMemo(() => allShapes.slice(0, maxShapes), [allShapes, maxShapes])
 
   return (
     <>
@@ -100,6 +103,7 @@ export function FloatingElements({ className = '' }: { className?: string }) {
   const mouseRef = useRef({ x: 0, y: 0 })
   const [isClient, setIsClient] = useState(false)
   const { ref, visible } = useVisible()
+  const { maxDpr, floatingShapeCount } = useDeviceConfig()
 
   useEffect(() => {
     setIsClient(true)
@@ -123,11 +127,11 @@ export function FloatingElements({ className = '' }: { className?: string }) {
       <Canvas
         camera={{ position: [0, 0, 6], fov: 60 }}
         gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
-        dpr={[1, 1.5]}
+        dpr={[1, Math.min(maxDpr, 1.5)]}
         fallback={<div />}
         frameloop={visible ? "always" : "never"}
       >
-        <FloatingScene mouse={mouseRef} />
+        <FloatingScene mouse={mouseRef} maxShapes={floatingShapeCount} />
       </Canvas>
     </div>
   )

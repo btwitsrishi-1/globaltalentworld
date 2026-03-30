@@ -4,6 +4,7 @@ import { useRef } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useInView } from "framer-motion";
 import { Globe, Users, Briefcase, Sparkles, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useDeviceConfig } from "@/lib/device-context";
 
 const features = [
     {
@@ -51,6 +52,7 @@ const features = [
 
 function FeatureCard({ feature, index, isHero }: { feature: typeof features[number]; index: number; isHero?: boolean }) {
     const ref = useRef<HTMLDivElement>(null);
+    const { enable3DTilt } = useDeviceConfig();
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
@@ -59,7 +61,7 @@ function FeatureCard({ feature, index, isHero }: { feature: typeof features[numb
     const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-4, 4]), springConfig);
 
     const handleMouseMove = (e: React.MouseEvent) => {
-        if (!ref.current) return;
+        if (!enable3DTilt || !ref.current) return;
         const rect = ref.current.getBoundingClientRect();
         mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
         mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
@@ -77,7 +79,7 @@ function FeatureCard({ feature, index, isHero }: { feature: typeof features[numb
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
             transition={{ duration: 0.7, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-            style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
+            style={enable3DTilt ? { rotateX, rotateY, transformStyle: "preserve-3d" } : undefined}
             onMouseMove={handleMouseMove}
             onMouseLeave={handleMouseLeave}
             className={`group relative bg-[#060608] transition-all duration-500 cursor-default ${

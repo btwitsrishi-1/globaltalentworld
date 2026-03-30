@@ -2,6 +2,7 @@
 
 import { ReactNode, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
+import { useDeviceConfig } from "@/lib/device-context";
 
 const ReactLenis = dynamic(
     () => import("@studio-freight/react-lenis").then((mod) => mod.ReactLenis),
@@ -10,14 +11,16 @@ const ReactLenis = dynamic(
 
 export function SmoothScroll({ children }: { children: ReactNode }) {
     const [isReady, setIsReady] = useState(false);
+    const { enableLenisSmooth } = useDeviceConfig();
 
     useEffect(() => {
+        if (!enableLenisSmooth) return;
         // Delay smooth scroll initialization to not block first paint
         const timer = setTimeout(() => setIsReady(true), 100);
         return () => clearTimeout(timer);
-    }, []);
+    }, [enableLenisSmooth]);
 
-    if (!isReady) {
+    if (!enableLenisSmooth || !isReady) {
         return <>{children}</>;
     }
 
